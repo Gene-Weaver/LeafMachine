@@ -110,7 +110,7 @@ function Slider_CreateFcn(hObject,~,~)
 end
 
 % --- Executes during object creation, after setting all properties.
-function Area2DistanceUI_CreateFcn(hObject, eventdata, handles)
+function Area2DistanceUI_CreateFcn(hObject,~,~)
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -211,6 +211,10 @@ sceneImageSmooth = handles.GraySmooth;
 boxImageRGB = handles.Ruler;
 boxImage = rgb2gray(boxImageRGB);
 
+% Imresize, faster option to fix double-tickmarking
+%boxImage = imresize(boxImage,.6,'Antialiasing',false);
+%sceneImage = imresize(sceneImage,.4,'Antialiasing',false);
+
 boxPoints = detectHarrisFeatures(boxImage);
 scenePoints = detectHarrisFeatures(sceneImage);
 scenePointsSmooth = detectHarrisFeatures(sceneImageSmooth);
@@ -218,6 +222,11 @@ scenePointsSmooth = detectHarrisFeatures(sceneImageSmooth);
 %scenePoints = detectSURFFeatures(sceneImage);%66.9
 %boxPoints = detectHarrisFeatures(boxImage,'MinQuality', 0.001);
 %scenePoints = detectHarrisFeatures(sceneImage,'MinQuality', 0.001);%
+
+
+% NOTES
+% distorted = scene
+% original = box
 
 [boxFeatures, boxPoints] = extractFeatures(boxImage, boxPoints);
 [sceneFeatures, scenePoints] = extractFeatures(sceneImage, scenePoints);
@@ -232,34 +241,69 @@ hold off
 axes(handles.axes1)
 %try 
     %%% 
+    % Determine rotation/scaling of ruler in herbarium image
+%     indexPairs = matchFeatures(boxFeatures, sceneFeatures); %matchFeatures(featuresOriginal, featuresDistorted)
+%     matchedOriginal  = boxPoints(indexPairs(:,1))
+%     matchedDistorted = scenePoints(indexPairs(:,2))
+%     
+%     figure;
+%     showMatchedFeatures(boxImage,sceneImage,matchedOriginal,matchedDistorted);
+%     title('Putatively matched points (including outliers)');
+    
+    % OG
+%     [tformPOLY, inlierDistorted, inlierOriginal] = estimateGeometricTransform(...
+%     matchedDistorted, matchedOriginal, 'similarity');
+
+    %tformPOLY = fitgeotrans(matchedDistorted.Location,matchedOriginal.Location,'nonreflectivesimilarity');
+    %tformPOLY = fitgeotrans(matchedDistorted.Location,matchedOriginal.Location,'similarity');
+
+
+    %figure;
+    %howMatchedFeatures(boxImage,sceneImage,inlierOriginal,inlierDistorted);
+    %title('Matching points (inliers only)');
+    %legend('ptsOriginal','ptsDistorted');
+    
+%     Tinv = tformPOLY.invert.T
+%     tformPOLY2 = projective2d(Tinv)
+%     
+%     ss = Tinv(2,1);
+%     sc = Tinv(1,1);
+%     scaleRecovered = sqrt(ss*ss + sc*sc)
+%     thetaRecovered = atan2(ss,sc)*180/pi
+%     outputView = imref2d(size(boxImage));
+%     recovered  = imwarp(sceneImage,tformPOLY,'OutputView',outputView); % Use tform to rotate polygon around ruler
+%     figure, imshowpair(boxImage,recovered,'montage')
+
+
     % Match features between ruler and image
     boxPairs = matchFeatures(boxFeatures, sceneFeatures);
     matchedBoxPoints = boxPoints(boxPairs(:, 1), :);
     matchedScenePoints = scenePoints(boxPairs(:, 2), :);
     [tform, ~, ~] = estimateGeometricTransform(matchedBoxPoints, matchedScenePoints, 'affine');
-    
+    %tformPOLY.T
+    %tform.T
     % Create boundary around ruler based on matched features
     boxPolygon = [1, 1;...                           % top-left
             size(boxImage, 2), 1;...                 % top-right
             size(boxImage, 2), size(boxImage, 1);... % bottom-right
             1, size(boxImage, 1);...                 % bottom-left
             1, 1];                   % top-left again to close the polygon
-    newBoxPolygon = transformPointsForward(tform, boxPolygon);
-%     figure(1);
-%     imshow(sceneImage);
-%     hold on;
-%     line(newBoxPolygon(:, 1), newBoxPolygon(:, 2), 'Color', 'g');
+    
+    newBoxPolygon = transformPointsForward(tform, boxPolygon)
+    %newBoxPolygon = transformPointsForward(tformPOLY2, boxPolygon)
+    
 
+    
     % Find matched points within the polygon
     ScenePointsX = scenePoints.Location(:,1);
     ScenePointsY = scenePoints.Location(:,2);
     [in,~] = inpolygon(ScenePointsX,ScenePointsY,newBoxPolygon(:,1),newBoxPolygon(:,2));
     PointsInPoly = [ScenePointsX(in),ScenePointsY(in)];
     PointsOutPoly = [ScenePointsX(~in),ScenePointsY(~in)];
-%     scatter(PointsInPoly(:,1),PointsInPoly(:,2),'g','.') % all points inside ruler boundary
-%     scatter(PointsOutPoly(:,1),PointsOutPoly(:,2),'r','.')
-%    hold off
     %%% End of selecting points around ruler
+    
+    
+    
     
     %%% Find tick marks and convert pixel distance to 1 cm. 
     % *** 1st distance calculation ***
@@ -280,8 +324,6 @@ axes(handles.axes1)
     % Remove zero distances
     MinDist(MinDist(:,1)==0)=[];
     % Show density plot 
-    %axes(handles.axes3)
-    %ksdensity(MinDist);
     [peakDensity,xi] = ksdensity(MinDist);
     [~,peakIndex] = max(peakDensity);
     % PeakLocation is the uncorrected pixel distance equal to 1mm
@@ -329,15 +371,7 @@ axes(handles.axes1)
         ApproxX = polyval(NormalizeX,PeakPointsLocation(:,2));
         CorrectedPoints = [ApproxX,PeakPointsLocation(:,2)];
     end
-    % Plot validation
-%     figure(10);
-%     imshow(sceneImage);
-%     hold on;
-%     line(PeakPointsLocation(:,2),ApproxX)
-%     scatter(PeakPointsLocation(:,1),PeakPointsLocation(:,2),'.','g')
-    %plot(ApproxX,PeakPointsLocation(:,2))
-    %hold on
-    %scatter(PeakPointsLocation(:,1),PeakPointsLocation(:,2))
+    
     CorrectedMinDist = zeros(length(CorrectedPoints)-1,1);
     CorrectedPointsTrimmed = zeros(length(CorrectedPoints)-1,2);
     for i = 1:length(CorrectedPoints)
@@ -376,7 +410,7 @@ axes(handles.axes1)
     line(newBoxPolygon(:, 1), newBoxPolygon(:, 2), 'Color', 'g')
     scatter(PointsOutPoly(:,1),PointsOutPoly(:,2),'r','.') 
     hold off
-    %axes(handles.axes1)
+
     
     % Plot features for export
     h = figure;
