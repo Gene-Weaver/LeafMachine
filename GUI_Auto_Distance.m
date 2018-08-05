@@ -26,7 +26,7 @@
 
 %% GUI Code
 function varargout = GUI_Auto_Distance(varargin)
-    % Begin initialization code - DO NOT EDIT
+    % Begin initialization code - DO NOT EDIT    
     gui_Singleton = 1;
     gui_State = struct('gui_Name',       mfilename, ...
                        'gui_Singleton',  gui_Singleton, ...
@@ -63,10 +63,19 @@ function GUI_Auto_Distance_OpeningFcn(hObject, eventdata, handles, varargin)
         sprintf("GPU Not Available")
     end
     
+    addpath('Img');
+    addpath('Leaf_Data');
+    addpath('Processed_Images');
+    addpath('Raw_Images');
+    addpath('Ruler');
+    addpath('Networks');
+    %addpath('SandboxFunctions');
     % Placeholder Images
+    handles.workspace = load('Networks\LeafMachine_SegNet.mat');
     handles.placeholder = imread('Img/StartLeaf.jpg');
     handles.placeholder2 = imread('Img/StartRuler.jpg');
     handles.placeholder3 = imread('Img/StartDiagram.jpg');
+    handles.placeholder4 = imread('Img/Batch.jpg');
     handles.Ruler = handles.placeholder2;
     axes(handles.axes1);
     imshow(handles.placeholder);
@@ -700,7 +709,7 @@ function Area2Distance_Callback(hObject, eventdata, handles)
 end
 
 
-function Area2DistanceUI_Callback(hObject, eventdata, handles)
+function Area2DistanceUI_Callback(hObject, ~, ~)
     handles = guidata(hObject);
     try
         handles.A2Dui = str2double(get(handles.Area2DistanceUI,'String'));
@@ -778,6 +787,9 @@ try
     gpuRGB = gpuArray(handles.RGB);
     % Superpixels function for lazy snapping
     SP = superpixels(handles.RGB,handles.Superpixel);% 200, 500, 1000, 1200, 1500, hyper 2000
+    sprintf(size(SP))
+    sprintf(size(handles.Superpixel))
+    sprintf(size(handles.RGB))
     BW = gpuArray(lazysnapping(handles.RGB,SP,...
         handles.foregroundInd,handles.backgroundInd,...
         'EdgeWeightScaleFactor',750)); %10-1000 default 500, usually 750 is best
@@ -786,6 +798,10 @@ try
 catch
     status = ('GPU Computing FAILED')
     SP = superpixels(handles.RGB,handles.Superpixel);% 200, 500, 1000, 1200, 1500, hyper 2000
+%     size(SP)
+%     size(handles.Superpixel)
+%     size(handles.RGB)
+    handles.foregroundInd
     BW = lazysnapping(handles.RGB,SP,handles.foregroundInd,handles.backgroundInd,...
     'EdgeWeightScaleFactor',750);%10-1000 default 500, usually 750 is best
     status = ('GPU Computing FAILED-Done')
@@ -1121,14 +1137,62 @@ end
 %========= Slider Selection Tool for Superpixels ============= 
 %=============================================================
 function Slider_Callback(hObject,~,~)
-handles = guidata(hObject);
-handles.Superpixel = round(get(hObject,'Value'));
-caption = round(handles.Superpixel/10);
-caption = sprintf('Mask Sensitivity: %d',caption);
-set(handles.SliderCaption,'String',strcat(caption,'%'))
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-guidata(hObject,handles);
+    handles = guidata(hObject);
+    handles.Superpixel = round(get(hObject,'Value'));
+    caption = round(handles.Superpixel/10);
+    caption = sprintf('Mask Sensitivity: %d',caption);
+    set(handles.SliderCaption,'String',strcat(caption,'%'))
+    % Hints: get(hObject,'Value') returns position of slider
+    %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+    guidata(hObject,handles);
+end
+
+%=============================================================
+%=========== Select Folder for Batch Processing ============== 
+%=============================================================
+function Batch_Callback(hObject,~,~)
+    handles = guidata(hObject);
+    [~,handles.BatchFolder] = uigetfile({'*.JPG;*.jpg;*.jpeg;*.png;*.tiff'});
+    addpath(handles.BatchFolder)
+    fOut = strsplit(handles.BatchFolder,'\');
+    fOut = fOut((length(fOut)-1));
+    handles.BatchFolderName = char(fOut(1));
+    handles.BatchFolderOutName = strcat(handles.BatchFolderName,'_Output');
+    
+    choice2 = questdlg('Output segmented image, montage, or both?', ...
+        'Segmentation Options',...
+        'Both','Montage Only','Segment Only','Segment Only');
+    switch choice2
+        case 'Montage Only'
+            segOpts = 'Montage';
+        case 'Segment Only'
+            segOpts = 'Segment';
+        case 'Both'
+            segOpts = 'Both';
+    end
+    choice3 = questdlg('Display images while processing? (Will run slower)', ...
+        'Show Images?',...
+        'Yes','No','No');
+    switch choice3
+        case 'Yes'
+            visOpts = 'show';
+        case 'No'
+            visOpts = 'noshow';
+    end
+    WaitCursor();
+    axes(handles.axes2)
+    imshow(handles.placeholder4);
+    
+    [nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.BatchFolder,segOpts,handles.workspace.vgg16_180730_v6_5ClassesNarrower,5,'gpu',visOpts,'_Seg',handles.BatchFolderOutName,handles)
+    
+    % GUI
+    ArrowCursor();
+    axes(handles.axes2)
+    imshow(handles.placeholder2);
+    axes(handles.axes1)
+    imshow(handles.placeholder);
+    set(handles.FileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
+    guidata(hObject,handles);
 end
 
 
@@ -1136,10 +1200,8 @@ end
 %========================== Quit GUI ========================= 
 %=============================================================
 function Quit_Callback(~,~,~)
-closereq
+    closereq
 end
-
-
 
 %<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 %>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1147,23 +1209,23 @@ end
 %<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 %>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 function Export = OpenCSV_StandAlone()
-FILE = uigetfile('*.xlsx');
-[~,FILENAME]=fileparts(FILE);
-FILENAMEsplit = strsplit(FILENAME,'-');
-handles.BaseFilename = char(FILENAMEsplit(1,1));
-handles.OriginalCSV = readtable(FILE);
-handles.CSVVariableNames = handles.OriginalCSV.Properties.VariableNames;
-Export = {handles.OriginalCSV,handles.BaseFilename,handles.CSVVariableNames,FILENAME};
+    FILE = uigetfile('*.xlsx');
+    [~,FILENAME]=fileparts(FILE);
+    FILENAMEsplit = strsplit(FILENAME,'-');
+    handles.BaseFilename = char(FILENAMEsplit(1,1));
+    handles.OriginalCSV = readtable(FILE);
+    handles.CSVVariableNames = handles.OriginalCSV.Properties.VariableNames;
+    Export = {handles.OriginalCSV,handles.BaseFilename,handles.CSVVariableNames,FILENAME};
 end
 
 function WaitCursor()
-    set(gcf, 'pointer', 'watch') 
-    drawnow;
+set(gcf, 'pointer', 'watch') 
+drawnow;
 end
 
 function ArrowCursor()
-set(gcf, 'pointer', 'arrow')
-drawnow;
+    set(gcf, 'pointer', 'arrow')
+    drawnow;
 end
 
 %=============================================================
@@ -1192,9 +1254,3 @@ function SelectBackgound_A2D()
     handles.A2DbackgroundInd = sub2ind(size(handles.RGB),backsub(:,2),backsub(:,1));
     handles.A2DbackgroundInd_disp = strjoin(string(handles.backgroundInd),' ');
 end
-
-
-
-
-
-
