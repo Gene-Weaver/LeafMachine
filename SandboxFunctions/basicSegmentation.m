@@ -6,14 +6,10 @@
 %%%     Department of Ecology and Evolutionary Biology
 
 
-function B = basicSegmentation(net,filename,destinationDirectory,image,cpu_gpu)
-    addpath('SandboxFunctions');
-    
-    % Read image
-    image = imread(image);
-    
+function [B,C,score,allScores] = basicSegmentation(net,filename,destinationDirectory,image,cpu_gpu)
+
     % Segmentation
-    [C,~,~] = semanticseg(image,net,'ExecutionEnvironment',cpu_gpu);
+    [C,score,allScores] = semanticseg(image,net,'ExecutionEnvironment',cpu_gpu);
 
     B = labeloverlay(image,C);
     

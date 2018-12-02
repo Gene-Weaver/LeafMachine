@@ -63,15 +63,17 @@ function GUI_Auto_Distance_OpeningFcn(hObject, eventdata, handles, varargin)
         sprintf("GPU Not Available")
     end
     
-    addpath('Img');
-    addpath('Leaf_Data');
-    addpath('Processed_Images');
-    addpath('Raw_Images');
-    addpath('Ruler');
-    addpath('Networks');
+    addpath(genpath('Img'));
+    addpath(genpath('Leaf_Data'));
+    addpath(genpath('Processed_Images'));
+    addpath(genpath('Raw_Images'));
+    addpath(genpath('Ruler'));
+    addpath(genpath('Networks'));
+    addpath(genpath('SandboxFunctions'));
+    addpath(genpath('Training_Images'));
     %addpath('SandboxFunctions');
     % Placeholder Images
-    handles.workspace = load('Networks\LeafMachine_SegNet.mat');
+    handles.workspace = load('Networks/LeafMachine_SegNet.mat');
     handles.placeholder = imread('Img/StartLeaf.jpg');
     handles.placeholder2 = imread('Img/StartRuler.jpg');
     handles.placeholder3 = imread('Img/StartDiagram.jpg');
@@ -157,7 +159,7 @@ function uibuttongroup1_SelectionChangedFcn(hObject, eventdata,~)
 end
 
 %=============================================================
-%======================== Next Image =========================
+%=================== Load Next Image =========================
 %=============================================================
 function NextImage_Callback(hObject,~,~)
     handles = guidata(hObject);
@@ -1152,46 +1154,56 @@ end
 %=============================================================
 function Batch_Callback(hObject,~,~)
     handles = guidata(hObject);
-    [~,handles.BatchFolder] = uigetfile({'*.JPG;*.jpg;*.jpeg;*.png;*.tiff'});
-    addpath(handles.BatchFolder)
-    fOut = strsplit(handles.BatchFolder,'\');
-    fOut = fOut((length(fOut)-1));
-    handles.BatchFolderName = char(fOut(1));
-    handles.BatchFolderOutName = strcat(handles.BatchFolderName,'_Output');
-    
-    choice2 = questdlg('Output segmented image, montage, or both?', ...
-        'Segmentation Options',...
-        'Both','Montage Only','Segment Only','Segment Only');
-    switch choice2
-        case 'Montage Only'
-            segOpts = 'Montage';
-        case 'Segment Only'
-            segOpts = 'Segment';
-        case 'Both'
-            segOpts = 'Both';
-    end
-    choice3 = questdlg('Display images while processing? (Will run slower)', ...
-        'Show Images?',...
-        'Yes','No','No');
-    switch choice3
-        case 'Yes'
-            visOpts = 'show';
-        case 'No'
-            visOpts = 'noshow';
-    end
-    WaitCursor();
-    axes(handles.axes2)
-    imshow(handles.placeholder4);
-    
-    [nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.BatchFolder,segOpts,handles.workspace.vgg16_180730_v6_5ClassesNarrower,5,'gpu',visOpts,'_Seg',handles.BatchFolderOutName,handles)
-    
-    % GUI
-    ArrowCursor();
-    axes(handles.axes2)
-    imshow(handles.placeholder2);
-    axes(handles.axes1)
-    imshow(handles.placeholder);
-    set(handles.FileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
+    LeafMachineBatchGUI
+%     [handles.BatchFolder] = uigetdir('Choose Folder for Batch Processing');
+%     addpath(handles.BatchFolder)
+%     fOut = strsplit(handles.BatchFolder,'\');
+%     fOut = fOut((length(fOut)-1));
+%     handles.BatchFolderName = char(fOut(1));
+%     handles.BatchFolderOutName = strcat(handles.BatchFolderName,'_Output');
+%     
+%     choice2 = questdlg('Output segmented image, montage, or both?', ...
+%         'Segmentation Options',...
+%         'Both','Montage Only','Segment Only','Segment Only');
+%     switch choice2
+%         case 'Montage Only'
+%             segOpts = 'Montage';
+%         case 'Segment Only'
+%             segOpts = 'Segment';
+%         case 'Both'
+%             segOpts = 'Both';
+%     end
+%     choice3 = questdlg('Display images while processing? (Will run slower)', ...
+%         'Show Images?',...
+%         'Yes','No','No');
+%     switch choice3
+%         case 'Yes'
+%             visOpts = 'show';
+%         case 'No'
+%             visOpts = 'noshow';
+%     end
+%     choice4 = questdlg('Use local GPU? Requires at least 8GB of GPU RAM', ...
+%         'Use GPU?',...
+%         'Yes','No','No');
+%     switch choice4
+%         case 'Yes'
+%             gpu_cpu = 'gpu';
+%         case 'No'
+%             gpu_cpu = 'cpu';
+%     end
+%     WaitCursor();
+%     axes(handles.axes2)
+%     imshow(handles.placeholder4);
+%     
+%     [nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.BatchFolder,segOpts,handles.workspace.vgg16_180730_v6_5ClassesNarrower,5,gpu_cpu,visOpts,'_Seg',handles.BatchFolderOutName,handles)
+%     
+%     % GUI
+%     ArrowCursor();
+%     axes(handles.axes2)
+%     imshow(handles.placeholder2);
+%     axes(handles.axes1)
+%     imshow(handles.placeholder);
+%     set(handles.FileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
     guidata(hObject,handles);
 end
 
