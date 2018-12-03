@@ -22,7 +22,7 @@ function buildImageOverlay(img,n,measurements,colors,destinationDirectory,filena
     imshow(img)
     hold on
     for P = 1:n
-        scatter(measurements{P}{3}(:,1),measurements{P}{3}(:,2),2,colors{P},'Visible', 'off');
+        scatter(measurements{P}{3}(:,1),measurements{P}{3}(:,2),2,colors{P});
     end
     hold off
     print(imgOverlay,fullfile(destinationDirectory,filename),'-dpng','-r500'); 
