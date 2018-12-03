@@ -80,7 +80,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
                         %%% Regular Route
                         filenameSeg = char(strcat(filename,'_Segment.png'));
 
-                        [imgOut,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,gpu_cpu);%%%Original basic version
+                        [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,gpu_cpu);%%%Original basic version
                         %figure,imshow(imgOut)
 
                         [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
@@ -88,12 +88,12 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
 
                         % Unpack data for export and plotting festures overlay
                         filenameOverlayLine = char(strcat(filename,'_OverlayLine.png'));
-                        imgOutOverlayLine = buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
+                        buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
 
                         filenameOverlayGlob = char(strcat(filename,'_OverlayGlob.png'));
-                        imgOutOverlayGlob = buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
+                        buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
 
-                        showImgAxes1(show,handles,hObject,imgOut)
+                        showImgAxes1(show,handles,hObject,imgCNN)
                         if gpu_cpu == "gpu"
                             reset(g);
                         end
@@ -102,7 +102,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
                         reset(g);
                         filenameSeg = char(strcat(filename,'_Segment.png'));
 
-                        [imgOut,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu');%%%Original basic version
+                        [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu');%%%Original basic version
                         %figure,imshow(imgOut)
 
                         [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
@@ -110,12 +110,12 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
 
                         % Unpack data for export and plotting festures overlay
                         filenameOverlayLine = char(strcat(filename,'_OverlayLine.png'));
-                        imgOutOverlayLine = buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
+                        buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
 
                         filenameOverlayGlob = char(strcat(filename,'_OverlayGlob.png'));
-                        imgOutOverlayGlob = buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
+                        buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
 
-                        showImgAxes1(show,handles,hObject,imgOut)
+                        showImgAxes1(show,handles,hObject,imgCNN)
                         reset(g);
                     end
                     
@@ -123,7 +123,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
 %                     "Segment HR"
 %                     filename2 = char(strcat(filename,'_SegmentHR.jpg'));
 %                     imgOut = highResSegmentation(net,filename2,destinationDirectory,img,gpu_cpu);
-%                     showImgAxes1(show,handles,hObject,imgOut)
+%                     showImgAxes1(show,handles,hObject,imgCNN)
                 end
                 set(handles.progress2,'String',strcat("Finished: ",filename),'ForegroundColor',[0 .45 .74]);
             case 'Both'

@@ -6,7 +6,7 @@
 %%%     University of Colorado, Boulder
 %%%     Department of Ecology and Evolutionary Biology
 
-function imgOverlay = buildImageOverlay(img,n,measurements,colors,destinationDirectory,filename)
+function buildImageOverlay(img,n,measurements,colors,destinationDirectory,filename)
     % Extract measurements
     % measurements ==> {cleanLeaf_Area,cleanLeaf_Perimeter,cleanLeaf_PerimeterOverlay,cleanLeaf_Centroid};
 
@@ -22,10 +22,11 @@ function imgOverlay = buildImageOverlay(img,n,measurements,colors,destinationDir
     imshow(img)
     hold on
     for P = 1:n
-        scatter(measurements{P}{3}(:,1),measurements{P}{3}(:,2),2,colors{P});
+        scatter(measurements{P}{3}(:,1),measurements{P}{3}(:,2),2,colors{P},'Visible', 'off');
     end
     hold off
-    print(imgOverlay,fullfile(destinationDirectory,filename),'-dpng','-r500');  
+    print(imgOverlay,fullfile(destinationDirectory,filename),'-dpng','-r500'); 
+    delete(imgOverlay);
     %saveas(imgOverlay,fullfile(destinationDirectory,filename))
 end
 

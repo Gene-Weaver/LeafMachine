@@ -12,7 +12,7 @@ function cleanLeaf = watershedCleanup(imgCrop,strelSize)
     
     % Take only largest blog if there are multiple
     imgCropBinaryMessy = bwareafilt(imgCropBinary,1);
-    imshow(imgCropBinaryMessy)
+    %imshow(imgCropBinaryMessy)
 
     % Shrink leaf to find outliers, used for mask in imimposemin()
     mask = imerode(imgCropBinaryMessy,strel('octagon',strelSize));

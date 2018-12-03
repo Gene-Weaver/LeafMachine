@@ -38,7 +38,7 @@ function [globData,lineData] = runLazySnappingForBlobs(labelGlob,labelLine,nGlob
 
         % Get Background Indices
         [cX,cY,cZ] = size(imgCropGlob);
-        [dimX,dimY,SPS] = setBackgoundPoints(cX,cY);
+        [dimX,dimY,SPS,EWS] = setBackgoundPoints(cX,cY);
         backgroundInd = sub2ind([cX,cY,cZ],dimY,dimX);
         % Get leaf indices
         [y, x] = find(globNode{i});
@@ -47,11 +47,11 @@ function [globData,lineData] = runLazySnappingForBlobs(labelGlob,labelLine,nGlob
         % Superixels and lazysnapping
         globSP{i} = superpixels(imgCropGlob,SPS);% 200, 500, 1000, 1200, 1500, hyper 2000
         try
-            gLS = lazysnapping(imgCropGlob,globSP{i},foregroundInd,backgroundInd,'EdgeWeightScaleFactor',750);
+            gLS = lazysnapping(imgCropGlob,globSP{i},foregroundInd,backgroundInd,'EdgeWeightScaleFactor',EWS);
         catch
             [y, x] = find(globSkel{i});
             foregroundInd = sub2ind([cX,cY,cZ],y,x);
-            gLS = lazysnapping(imgCropGlob,globSP{i},foregroundInd,backgroundInd,'EdgeWeightScaleFactor',750);
+            gLS = lazysnapping(imgCropGlob,globSP{i},foregroundInd,backgroundInd,'EdgeWeightScaleFactor',EWS);
         end
         globLS{i} = gLS;
         
@@ -123,7 +123,7 @@ function [globData,lineData] = runLazySnappingForBlobs(labelGlob,labelLine,nGlob
         
         % Run watershed cleanup
         cleanLeaf = watershedCleanup(imgCropLine,9);
-        %figure,imshow(cleanLeaf)s
+        %figure,imshow(cleanLeaf)
         
         % Export final leaf binary
         lineCropLS{i} = cleanLeaf;
