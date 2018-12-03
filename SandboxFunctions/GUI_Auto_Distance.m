@@ -73,7 +73,7 @@ function GUI_Auto_Distance_OpeningFcn(hObject, eventdata, handles, varargin)
     addpath(genpath('Training_Images'));
     %addpath('SandboxFunctions');
     % Placeholder Images
-    handles.workspace = load('Networks/LeafMachine_SegNet.mat');
+    handles.workspace = load('Networks/LeafMachine_SegNet_v1.mat');
     handles.placeholder = imread('Img/StartLeaf.jpg');
     handles.placeholder2 = imread('Img/StartRuler.jpg');
     handles.placeholder3 = imread('Img/StartDiagram.jpg');
