@@ -76,7 +76,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
             case 'Segment'
                 if Dim < 2016
                     %"Segment LR"
-                    %try
+                    try
                         %%% Regular Route
                         filenameSeg = char(strcat(filename,'_Segment.png'));
 
@@ -97,27 +97,27 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
                         if gpu_cpu == "gpu"
                             reset(g);
                         end
-%                     catch 
-%                         %%% If GPU fails out Route
-%                         reset(g);
-%                         filenameSeg = char(strcat(filename,'_Segment.png'));
-% 
-%                         [imgOut,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu');%%%Original basic version
-%                         %figure,imshow(imgOut)
-% 
-%                         [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
-%                         %[compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,C1,1,30,4,COLOR);
-% 
-%                         % Unpack data for export and plotting festures overlay
-%                         filenameOverlayLine = char(strcat(filename,'_OverlayLine.png'));
-%                         imgOutOverlayLine = buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
-% 
-%                         filenameOverlayGlob = char(strcat(filename,'_OverlayGlob.png'));
-%                         imgOutOverlayGlob = buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
-% 
-%                         showImgAxes1(show,handles,hObject,imgOut)
-%                         reset(g);
-%                     end
+                    catch 
+                        %%% If GPU fails out
+                        reset(g);
+                        filenameSeg = char(strcat(filename,'_Segment.png'));
+
+                        [imgOut,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu');%%%Original basic version
+                        %figure,imshow(imgOut)
+
+                        [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
+                        %[compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,C1,1,30,4,COLOR);
+
+                        % Unpack data for export and plotting festures overlay
+                        filenameOverlayLine = char(strcat(filename,'_OverlayLine.png'));
+                        imgOutOverlayLine = buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
+
+                        filenameOverlayGlob = char(strcat(filename,'_OverlayGlob.png'));
+                        imgOutOverlayGlob = buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
+
+                        showImgAxes1(show,handles,hObject,imgOut)
+                        reset(g);
+                    end
                     
                 else
 %                     "Segment HR"
