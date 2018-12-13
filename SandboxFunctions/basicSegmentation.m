@@ -6,14 +6,18 @@
 %%%     Department of Ecology and Evolutionary Biology
 
 
-function [B,C,score,allScores] = basicSegmentation(net,filename,destinationDirectory,image,cpu_gpu)
+function [B,C,score,allScores] = basicSegmentation(net,filename,destinationDirectory,image,cpu_gpu,quality)
 
     % Segmentation
     [C,score,allScores] = semanticseg(image,net,'ExecutionEnvironment',cpu_gpu);
 
     B = labeloverlay(image,C);
     
-    % Output
-    destDir = fullfile(destinationDirectory,filename);
-    imwrite(B,destDir);
+    if quality == "High"
+        filename2 = char(strcat(filename,'.png'));
+        imwrite(B,fullfile(destinationDirectory,filename2),'BitDepth',16);
+    else
+        filename2 = char(strcat(filename,'.jpg'));
+        imwrite(B,fullfile(destinationDirectory,filename2));
+    end
 end

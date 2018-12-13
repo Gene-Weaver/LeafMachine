@@ -56,7 +56,7 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Placeholder Images
     handles.S = load('Networks/LeafMachine_SegNet_v1.mat');  
     handles.LeafMachine_SegNet_v1 = handles.S.LeafMachine_SegNet_v1;
-    handles.placeholder = imread('Img/StartLeaf.jpg');
+    handles.placeholder = imread('Img/LMlarge.jpg');
     handles.placeholder2 = imread('Img/Batch.jpg');
     %handles.newData = buildData()
     axes(handles.axes1);
@@ -245,6 +245,12 @@ function Run_Callback(hObject,~,~)
         handles.segOpts = 'Segment';
     end
 
+    % Check checkboxes for image quality
+    if handles.quality.Value
+        handles.quality = 'High';
+    else
+        handles.quality = 'Low';
+    end
         
 
     
@@ -262,7 +268,7 @@ function Run_Callback(hObject,~,~)
     % Run Operations!!!
     %[nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.dirOpen,handles.segOpts,handles.LeafMachine_SegNet_v1,5,handles.gpu_cpu,handles.visOpts,handles.filesSuffix,handles.dirSave_wSuffix,handles)
     [nFiles,BatchTime] = LeafMachineBatchSegmentation_GUI(handles.dirOpen,handles.dirOpen2,handles.segOpts,handles.LeafMachine_SegNet_v1,5,feature,handles.gpu_cpu,...
-                        handles.local_url,handles.url_col,handles.visOpts,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
+                        handles.local_url,handles.url_col,handles.visOpts,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
     % GUI
     ArrowCursor();
     set(handles.fileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
@@ -329,6 +335,12 @@ function uibuttongroup5_SelectionChangedFcn(hObject, eventdata, handles)
     guidata(hObject,handles);
 end
 
+% --- Executes on button press in quality.
+function quality_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
 
 %<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 %>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -360,3 +372,5 @@ end
 % 
 % alterPaths = {[oldPathDataSource newPathDataSource];[oldPathPixelLabel newPathPixelLabel]};
 % unresolvedPaths = changeFilePaths(kspace.gTruth,alterPaths)
+
+

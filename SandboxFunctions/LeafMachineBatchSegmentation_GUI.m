@@ -7,7 +7,7 @@
 %%%     Department of Ecology and Evolutionary Biology
 
 
-function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segment_Montage_Both,net,nClasses,feature,gpu_cpu,local_url,url_col,show,filenameSuffix,destinationDirectory,handles,hObject)
+function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segment_Montage_Both,net,nClasses,feature,gpu_cpu,local_url,url_col,show,quality,filenameSuffix,destinationDirectory,handles,hObject)
     % Initiate colormap
     COLOR = colorcube(30);
     g = gpuDevice(1);
@@ -78,20 +78,20 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
                     %"Segment LR"
                     try
                         %%% Regular Route
-                        filenameSeg = char(strcat(filename,'_Segment.png'));
+                        filenameSeg = char(strcat(filename,'_Segment'));
 
-                        [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,gpu_cpu);%%%Original basic version
+                        [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,gpu_cpu,quality);%%%Original basic version
                         %figure,imshow(imgOut)
 
                         [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
                         %[compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,C1,1,30,4,COLOR);
 
                         % Unpack data for export and plotting festures overlay
-                        filenameOverlayLine = char(strcat(filename,'_OverlayLine.png'));
-                        buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
+                        filenameOverlayLine = char(strcat(filename,'_OverlayLine'));
+                        buildImageOverlayDirect(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine,quality);
 
-                        filenameOverlayGlob = char(strcat(filename,'_OverlayGlob.png'));
-                        buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
+                        filenameOverlayGlob = char(strcat(filename,'_OverlayGlob'));
+                        buildImageOverlayDirect(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob,quality);
 
                         showImgAxes1(show,handles,hObject,imgCNN)
                         if gpu_cpu == "gpu"
@@ -99,27 +99,45 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,Segmen
                         end
                     catch 
                         %%% If GPU fails out
+                        "GPU Catch Loop"
                         reset(g);
-                        filenameSeg = char(strcat(filename,'_Segment.png'));
+                        filenameSeg = char(strcat(filename,'_Segment'));
 
-                        [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu');%%%Original basic version
+                        [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu',quality);%%%Original basic version
                         %figure,imshow(imgOut)
 
                         [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
                         %[compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,C1,1,30,4,COLOR);
 
                         % Unpack data for export and plotting festures overlay
-                        filenameOverlayLine = char(strcat(filename,'_OverlayLine.png'));
-                        buildImageOverlay(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine);
+                        filenameOverlayLine = char(strcat(filename,'_OverlayLine'));
+                        buildImageOverlayDirect(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine,quality);
 
-                        filenameOverlayGlob = char(strcat(filename,'_OverlayGlob.png'));
-                        buildImageOverlay(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob);
+                        filenameOverlayGlob = char(strcat(filename,'_OverlayGlob'));
+                        buildImageOverlayDirect(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob,quality);
 
                         showImgAxes1(show,handles,hObject,imgCNN)
                         reset(g);
                     end
                     
-                else
+                else %%%%% Images larger than 2016 pixels %%%%%
+                    "Large Image Loop"
+                    filenameSeg = char(strcat(filename,'_Segment'));
+
+                    [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,destinationDirectory,img,'cpu',quality);%%%Original basic version
+                    %figure,imshow(imgOut)
+
+                    [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],C,feature,30,4,COLOR);%USE THIS FOR DEPLOYMENT
+                    %[compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,C1,1,30,4,COLOR);
+
+                    % Unpack data for export and plotting festures overlay
+                    filenameOverlayLine = char(strcat(filename,'_OverlayLine'));
+                    buildImageOverlayDirect(img,lineData{1},lineData{10},lineData{3},destinationDirectory,filenameOverlayLine,quality);
+
+                    filenameOverlayGlob = char(strcat(filename,'_OverlayGlob'));
+                    buildImageOverlayDirect(img,globData{1},globData{10},globData{3},destinationDirectory,filenameOverlayGlob,quality);
+
+                    showImgAxes1(show,handles,hObject,imgCNN)
 %                     "Segment HR"
 %                     filename2 = char(strcat(filename,'_SegmentHR.jpg'));
 %                     imgOut = highResSegmentation(net,filename2,destinationDirectory,img,gpu_cpu);

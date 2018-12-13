@@ -28,6 +28,8 @@ function buildImageOverlay(img,n,measurements,colors,destinationDirectory,filena
     print(imgOverlay,fullfile(destinationDirectory,filename),'-dpng','-r500'); 
     delete(imgOverlay);
     %saveas(imgOverlay,fullfile(destinationDirectory,filename))
+    
+    
 end
 
 
