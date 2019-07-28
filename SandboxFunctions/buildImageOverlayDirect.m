@@ -17,10 +17,20 @@ function buildImageOverlayDirect(img,n,measurements,colors,destinationDirectory,
 %     end
 
     % Plot features for export
-
-
+%     [m,mm,~] = size(img);
+%     blankMask = zeros(m,mm);
+%     blankMask3 =blankMask;
+%     
+%     for k = 1:length(measurements{P}.cleanLeaf_PerimeterOverlay{1}(:,1))
+%         blankMask3(measurements{1}.cleanLeaf_PerimeterOverlay{1}(k,2),measurements{1}.cleanLeaf_PerimeterOverlay{1}(k,1)) = 255;
+%     end
+%     idx = imdilate(blankMask3,strel('disk',1,0));
+%     blankMask(measurements{1}.cleanLeaf_PerimeterOverlay{1}(:,2),measurements{1}.cleanLeaf_PerimeterOverlay{1}(:,1)) = 255;
+%     blankMask2 = uint8(repmat(idx,[1 1 3]));
+%     figure();imshow(blankMask2);
+    
     for P = 1:n
-        for i = 1:length(measurements{P}{3}(:,1))
+        for i = 1:length(measurements{P}.cleanLeaf_PerimeterOverlay{1}(:,1))
             img = thickenLine(img,measurements,colors,P,i,0,0);
 %             img(measurements{P}{3}(i,2),measurements{P}{3}(i,1),1) = 255*colors{P}(1,1);
 %             img(measurements{P}{3}(i,2),measurements{P}{3}(i,1),2) = 255*colors{P}(1,2);

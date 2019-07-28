@@ -52,10 +52,30 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     addpath(genpath('Networks'));
     addpath(genpath('SandboxFunctions'));
     addpath(genpath('Training_Images'));
+    
+    try
+        nnet.internal.cnngpu.reluForward(gpuArray(0));
+    catch
+        nnet.internal.cnngpu.reluForward(gpuArray(0));
+    end
 
     % Placeholder Images
-    handles.S = load('Networks/LeafMachine_SegNet_v1.mat');  
-    handles.LeafMachine_SegNet_v1 = handles.S.LeafMachine_SegNet_v1;
+%     handles.S = load('Networks/LeafMachine_SegNet_v1.mat');  
+%     handles.LeafMachine_SegNet_v1 = handles.S.LeafMachine_SegNet_v1;
+%     handles.SVM = load('Networks/SVM/leafID_SVM_8parameters.mat');
+%     handles.SVM = handles.SVM.leafID_SVM_8parameters;
+
+    handles.SVM = load('Networks/SVM/leafID_subset20AdaBoost50splits100learners0810percent.mat');
+    handles.SVM = handles.SVM.leafID_subset20AdaBoost50splits100learners0810percent;
+    handles.netSVMruler = load('Networks/SVM/SVM_RulerID_BaggedTrees0906percent.mat');
+    handles.netSVMruler = handles.netSVMruler.SVM_RulerID_BaggedTrees0906percent;
+    handles.S = load('Networks/deeplabV3Plus_Lexi_dynamicCrop_MWK_network.mat');  
+    handles.LeafMachine_SegNet_v1 = handles.S.deeplabV3Plus_Lexi_dynamicCrop_MWK;
+%     handles.SVM = load('Networks/SVM/baggedTrees_937_Compact.mat');
+%     handles.SVM = handles.SVM.baggedTrees_937_Compact;
+
+    handles.allPlantFamilies = load('SandboxFunctions/allPlantFamilies.mat');  
+    
     handles.placeholder = imread('Img/LMlarge.jpg');
     handles.placeholder2 = imread('Img/Batch.jpg');
     %handles.newData = buildData()
@@ -63,6 +83,8 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     imshow(handles.placeholder);
     uibuttongroup5_CreateFcn(hObject, eventdata, handles);
     set(handles.uibuttongroup5,'selectedobject',handles.radiobuttonLocal);
+    set(handles.uibuttongroup6,'selectedobject',handles.dwc_high);
+    handles.url_col_radio = "NA";
     
     guidata(hObject, handles);
 end
@@ -97,7 +119,7 @@ end
 function changeURL_Callback(hObject,~,~)
     handles = guidata(hObject); 
     % Choose file
-    [handles.dirURLFileName,handles.dirURLPath] = uigetfile({'*.xlsx';'*.csv'},'Choose .xlsx or .csv File Containing URLs in a Column');
+    [handles.dirURLFileName,handles.dirURLPath] = uigetfile({'*.csv'},'Choose .csv File Containing URLs in a Column');
     addpath(handles.dirURLPath);
     handles.dirURLFile = fullfile(handles.dirURLPath,handles.dirURLFileName);
     handles.dirOpen = handles.dirURLFile;
@@ -113,7 +135,7 @@ end
 
 function changeURL2_Callback(hObject,~,~)
     handles = guidata(hObject);
-    [handles.dirURLFileName2,handles.dirURLPath2] = uigetfile({'*.xlsx';'*.csv'},'Choose .xlsx or .csv File Containing URLs in a Column');
+    [handles.dirURLFileName2,handles.dirURLPath2] = uigetfile({'*.csv'},'Choose .csv File Containing URLs in a Column');
     addpath(handles.dirURLPath2);
     handles.dirURLFile2 = fullfile(handles.dirURLPath2,handles.dirURLFileName2);
     handles.dirOpen2 = handles.dirURLFile2;
@@ -156,16 +178,33 @@ function changeBatchSave_Callback(hObject,~,~)
     guidata(hObject, handles);
 end
 
+function inputSaveFreq_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject); 
+    guidata(hObject, handles);
+end
+% --- Executes during object creation, after setting all properties.
+function inputSaveFreq_CreateFcn(hObject, eventdata, handles)
+    handles = guidata(hObject); 
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+    guidata(hObject, handles);
+end
+
 % --- Executes on button press in checkboxGPU.
 function checkboxGPU_Callback(hObject, eventdata, handles)
 end
 
-% --- Executes on button press in checkboxShow.
-function checkboxShow_Callback(hObject, eventdata, handles)
+% --- Executes on button press in checkboxLCM.
+function checkboxLCM_Callback(hObject, eventdata, handles)
 end
 
-% --- Executes on button press in checkboxMontage.
-function checkboxMontage_Callback(hObject, eventdata, handles)
+% --- Executes on button press in checkboxLS.
+function checkboxLS_Callback(hObject, eventdata, handles)
+end
+
+% --- Executes on button press in checkboxIND.
+function checkboxIND_Callback(hObject, eventdata, handles)
 end
 
 %=============================================================
@@ -181,6 +220,14 @@ function Run_Callback(hObject,~,~)
         handles.dirOpen2 = 'NA';
     else
         handles.local_url = 'url';
+    end
+
+    set(handles.uibuttongroup6,'SelectionChangeFcn',@uibuttongroup6_SelectionChangedFcn)
+    % Check radiobuttons for local_URL status
+    if handles.dwc_high.Value
+        handles.url_col_radio = "accessURI";
+    else
+        handles.url_col_radio = "goodQualityAccessURI";
     end
     
     % If user did not set open dir prior to run
@@ -231,18 +278,18 @@ function Run_Callback(hObject,~,~)
         handles.gpu_cpu = 'cpu';
     end
     
-    % Check checkboxes for vis status
-    if handles.checkboxShow.Value
-        handles.visOpts = 'show';
+    % Check checkboxes for LazySnapping status
+    if handles.checkboxLS.Value
+        handles.LS = true;
     else
-        handles.visOpts = 'noshow';
+        handles.LS = false;
     end
     
-    % Check checkboxes for segOpts status
-    if handles.checkboxMontage.Value
-        handles.segOpts = 'Both';
+    % Check checkboxes for saveLeafCandidateMask status
+    if handles.checkboxLCM.Value
+        handles.LCM = true;
     else
-        handles.segOpts = 'Segment';
+        handles.LCM = false;
     end
 
     % Check checkboxes for image quality
@@ -251,24 +298,47 @@ function Run_Callback(hObject,~,~)
     else
         handles.quality = 'Low';
     end
-        
-
     
+    % Check checkboxes for image quality
+    if handles.checkboxIND.Value
+        handles.checkboxIND = true;
+    else
+        handles.checkboxIND = false;
+    end
+    
+    % Get save freq
+    defaultSave = 10;
+    handles.saveFreq = round(str2double(get(handles.inputSaveFreq,'String')));
+    
+    if isempty(handles.saveFreq)
+        handles.saveFreq = uint64(defaultSave);
+    else
+        try 
+            handles.saveFreq = uint64(handles.saveFreq);
+        catch
+            handles.saveFreq = uint64(defaultSave);
+        end
+    end
+
+
     % Check checkboxes for allFilesSuffix status
     handles.filesSuffix = get(handles.allFilesSuffix,'String');
     handles.url_col = get(handles.urlColumn,'String');
     
+    if isempty(handles.url_col)
+        handles.url_col = handles.url_col_radio;       
+    end
+    
     %{Leaf,Background,Stem,Text_Black,Fruit_Flower};
     handles.feature = 1;%Leaf
-    %handles.feature = 4;%Leaf
     feature = handles.feature;
     
     WaitCursor();
-
+    
     % Run Operations!!!
     %[nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.dirOpen,handles.segOpts,handles.LeafMachine_SegNet_v1,5,handles.gpu_cpu,handles.visOpts,handles.filesSuffix,handles.dirSave_wSuffix,handles)
-    [nFiles,BatchTime] = LeafMachineBatchSegmentation_GUI(handles.dirOpen,handles.dirOpen2,handles.segOpts,handles.LeafMachine_SegNet_v1,5,feature,handles.gpu_cpu,...
-                        handles.local_url,handles.url_col,handles.visOpts,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
+    [nFiles,BatchTime] = LeafMachineBatchSegmentation_GUI(handles.dirOpen,handles.dirOpen2,handles.LeafMachine_SegNet_v1,handles.SVM,handles.netSVMruler,handles.LCM,handles.LS,handles.checkboxIND,handles.saveFreq,feature,handles.gpu_cpu,...
+                        handles.local_url,handles.url_col,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
     % GUI
     ArrowCursor();
     set(handles.fileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
@@ -335,11 +405,33 @@ function uibuttongroup5_SelectionChangedFcn(hObject, eventdata, handles)
     guidata(hObject,handles);
 end
 
+% --- Executes during object creation, after setting all properties.
+function uibuttongroup6_CreateFcn(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+% --- Executes when selected object is changed in uibuttongroup6.
+function uibuttongroup6_SelectionChangedFcn(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    
+    set(handles.uibuttongroup6,'SelectionChangeFcn',@uibuttongroup6_SelectionChangedFcn)
+    switch(get(eventdata.NewValue,'Tag'))
+        case 'dwc_high'
+            handles.url_col_radio = "goodQualityAccessURI";
+        case 'dwc_low'
+            handles.url_col_radio = "accessURI";
+    end
+    guidata(hObject,handles);
+end
+
+
 % --- Executes on button press in quality.
 function quality_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
     guidata(hObject,handles);
 end
+
+
 
 
 %<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -372,5 +464,17 @@ end
 % 
 % alterPaths = {[oldPathDataSource newPathDataSource];[oldPathPixelLabel newPathPixelLabel]};
 % unresolvedPaths = changeFilePaths(kspace.gTruth,alterPaths)
+
+
+
+
+
+
+
+
+
+
+
+
 
 

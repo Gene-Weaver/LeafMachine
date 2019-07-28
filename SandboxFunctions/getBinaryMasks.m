@@ -8,10 +8,10 @@
 
 function binaryMasks = getBinaryMasks(C)
     % Retrieve binary masks
-    Stem = C == 'Stem';
-    Leaf = C == 'Leaf';
-    Text_Black = C == 'Text_Black';
-    Fruit_Flower = C == 'Fruit_Flower';
-    Background = C == 'Background';
-    binaryMasks = {Leaf,Background,Stem,Text_Black,Fruit_Flower};
+    stem = C == 'stem';
+    leaf = C == 'leaf';
+    text = C == 'text';
+    fruitFlower = C == 'fruitFlower';
+    background = C == 'background';
+    binaryMasks = {leaf,stem,fruitFlower,background,text};
 end

@@ -13,7 +13,9 @@
 %%% of grass etc. and 3 globular strels for rounder leaves. I take the 
 %%% union of the line strels and the intersection of the globular. 
 
-function [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryStrel(img,imgSize,C,feature,radius,cirAprox,COLOR)
+
+function [compositeGlobular,compositeLine,blobTable,globData,lineData,binaryMasks] = findLeavesBinaryStrel(img,imgSize,family,megapixels,C,feature,...
+    radius,cirAprox,COLOR,netSVM,saveLeafCandidateMasks,processLazySnapping,filename,destinationDirectory)
     % Build strel size
     % Default: radius = 30, cirAprox = 4
     SE = setStrelSize(radius,cirAprox);
@@ -21,23 +23,53 @@ function [compositeGlobular,compositeLine,globData,lineData] = findLeavesBinaryS
     % binaryMasks{1:5} = {Leaf,Background,Stem,Text_Black,Fruit_Flower};
     binaryMasks = getBinaryMasks(C);
     
-    % Get UNION of "line strel" imerode masks
-    compositeLine = fuseLineBinary(binaryMasks,SE,feature);
-    %figure,imshow(compositeLine)
     
-    % Get INTERSECTION of globular imerode masks
-    compositeGlobular = fuseGlobularBinary(binaryMasks,SE,feature);
-    %figure,imshow(compositeGlobular)
+    %%% This is the initial check based on ONLY the semantic segmentation
+    composite = bwareaopen(binaryMasks{feature},50);
+    [label, n] = bwlabel(composite);
+    % Pass candidate masks to SVM, those that fail send to runLazySnappingForBlobs
+    sprintf("initialSVMcheckAndClean")
+    timeB = tic();
     
-    % Ignore areas smaller than 25 pixels
-    compositeLine = bwareaopen(compositeLine,25);
-    compositeGlobular = bwareaopen(compositeGlobular,25);
- 
-    % Count number of potential solitary leaves
-    [labelGlob, nGlob] = bwlabel(compositeGlobular);
-    [labelLine, nLine] = bwlabel(compositeLine);
+    [blobTable,blobFails] = initialSVMcheckAndClean(label,n,img,family,megapixels,COLOR,netSVM,saveLeafCandidateMasks,filename,destinationDirectory);
+    toc(timeB)
     
-    [globData,lineData] = runLazySnappingForBlobs(labelGlob,labelLine,nGlob,nLine,img,imgSize,COLOR);
-%     imshow(lineData{6}{1})
-%     imshow(globData{6}{1})
+    sprintf("blobFails")
+    timeC = tic();
+    
+    if ~isempty(blobFails)
+        if processLazySnapping
+            %%% Below code erodes binary masks to prep for lazysnapping
+            % Get UNION of "line strel" imerode masks
+            compositeLine = fuseLineBinary(blobFails,SE,feature);
+            %figure,imshow(compositeLine)
+
+            % Get INTERSECTION of globular imerode masks
+            compositeGlobular = fuseGlobularBinary(blobFails,SE,feature);
+            %figure,imshow(compositeGlobular)
+
+            % Ignore areas smaller than 25 pixels
+            compositeLine = bwareaopen(compositeLine,50);
+            compositeGlobular = bwareaopen(compositeGlobular,50);
+
+            % Count number of potential solitary leaves
+            [labelGlob, nGlob] = bwlabel(compositeGlobular);
+            [labelLine, nLine] = bwlabel(compositeLine);
+
+            [globData,lineData] = runLazySnappingForBlobs(labelGlob,labelLine,nGlob,nLine,img,imgSize,family,megapixels,COLOR,netSVM,saveLeafCandidateMasks,filename,fullfile(destinationDirectory,'Leaf_LazySnapping'));
+        else
+            sprintf("blobFails is empty")
+            compositeLine = [];
+            compositeGlobular = [];
+            globData = [];
+            lineData = [];
+        end
+    else
+        sprintf("blobFails is empty")
+        compositeLine = [];
+        compositeGlobular = [];
+        globData = [];
+        lineData = [];
+    end
+    toc(timeC);
 end
