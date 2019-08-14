@@ -125,7 +125,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
        
            
         % New File
-        %if (~ismember(filename,prevDataTempFile.filename)) || (continueRun == false)
+        if ~ismember(filename,prevDataTempFile.filename)% || (continueRun == false)
             try
                 sprintf("GPU/CPU Image Loop")
                 filenameSeg = char(strcat(filename,'_Segment'));
@@ -358,9 +358,9 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
                 writetable(leafData,fullfile(fullfile(destinationDirectory,'Data_Temp'),fOutB));
             end
             INDleaf = INDleaf + 1;
-        %else % For image that has already been run
-        %    sprintf(strjoin({filename,'--Image already run'},''))
-        %end
+        else % For image that has already been run
+            sprintf(strjoin({filename,'--Image already run'},''))
+        end
     end% End of single image processing
     
     fOut = ['LeafMachine_Batch__',datestr(now,'mm-dd-yyyy_HH-MM'),'__FINAL.xlsx'];
