@@ -12,7 +12,7 @@
 
 
 
-function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,megapixels,COLOR,netSVM,saveLeafCandidateMasks,filename,destinationDirectory)
+function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,megapixels,imfillMasks,netSVM,saveLeafCandidateMasks,filename,destinationDirectory)
     % Blob
     blobHeaders = {'id','SVMprediction','time','color','colorReport','bbox','bboxReport','area','perimeter','measurements'};
     blobData = cell(n,length(blobHeaders));
@@ -28,7 +28,14 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
     if n > 0
         for i = 1:n
             % Crop imgOrig to the bounds + a bit extra 
-            blobBox_temp = regionprops(label==i, 'BoundingBox');
+            if imfillMasks == "True"
+                blobBox_temp = regionprops(label==i, 'BoundingBox');
+                blobBox_tempLeaf = regionprops(imfill(label==i,'holes'), 'BoundingBox');
+            elseif imfillMasks == "False"
+                blobBox_temp = regionprops(label==i, 'BoundingBox');
+                blobBox_tempLeaf = regionprops(label==i, 'BoundingBox');
+            end
+            
             bound = round(blobBox_temp.BoundingBox);
             % Expand bbox a bit
     %         A = bound(1)-70;
@@ -41,8 +48,16 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
     %         if B+D > imgOrigSize(1), D = imgOrigSize(1)-B; end
     %         bound2 = [A B C D];
             % Crop
-            imgCropBlob = imcrop(imgOrig,bound);
-            labelBlobCrop = imcrop(label==i,bound);
+            if imfillMasks == "True"
+                imgCropBlob = imcrop(imgOrig,bound);
+                labelBlobCrop = imcrop(label==i,bound);
+                labelBlobCropLeaf = imcrop(imfill(label==i,'holes'),bound);
+            elseif imfillMasks == "False"
+                imgCropBlob = imcrop(imgOrig,bound);
+                labelBlobCrop = imcrop(label==i,bound);
+                labelBlobCropLeaf = imcrop(label==i,bound);
+            end
+            
 
             % Put label into SVM
             % ***Run binary blob through SVM***
@@ -61,7 +76,7 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                 %yfit = string(cell2mat(netSVM.predictFcn(UNKNOWN)));original
                 if yfit == "leaf"
                     % Save binary --optional, used for SVM training
-                    saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf'),labelBlobCrop,['Leaf__SVM__BINARY__',int2str(i)]);
+                    saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf'),labelBlobCropLeaf,['Leaf__SVM__BINARY__',int2str(i)]);
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf'),imgCropBlob,['Leaf__SVM__RGB__',int2str(i)]);
 
                     % Get color
@@ -69,17 +84,17 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.colorReport{INDblob} = strjoin(['[',strjoin(string([0.4660, 0.6740, 0.1880]),' '),']'],''); 
 
                     % Get measurements
-                    blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
+                    blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCropLeaf,bound);
 
                     %%% Save measurements upon "leaf" success
                     % Export final leaf binary
                     blobTable.id{INDblob} = i;
                     blobTable.SVMprediction{INDblob} = 'Leaf';
                     blobTable.time{INDblob} = datestr(now,'mm-dd-yyyy HH-MM-SS.FFF');
-                    blobTable.bbox{INDblob} = blobBox_temp;
-                    blobTable.bboxReport{INDblob} = strjoin(['[',strjoin(string(blobBox_temp.BoundingBox),' '),']'],'');
-                    blobTable.area{INDblob} = bwarea(labelBlobCrop);
-                    blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
+                    blobTable.bbox{INDblob} = blobBox_tempLeaf;
+                    blobTable.bboxReport{INDblob} = strjoin(['[',strjoin(string(blobBox_tempLeaf.BoundingBox),' '),']'],'');
+                    blobTable.area{INDblob} = bwarea(labelBlobCropLeaf);
+                    blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCropLeaf,'Perimeter'));
 
                     INDblob = INDblob + 1;
 

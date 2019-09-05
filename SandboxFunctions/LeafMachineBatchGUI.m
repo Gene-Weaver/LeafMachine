@@ -67,6 +67,8 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     handles.SVM = load('Networks/SVM/leafID_subset20AdaBoost50splits100learners0810percent.mat');
     handles.SVM = handles.SVM.leafID_subset20AdaBoost50splits100learners0810percent;
+%     handles.SVM = load('Networks/SVM/leafID_AdaBoost500splits100learners8var0799percent.mat');
+%     handles.SVM = handles.SVM.leafID_AdaBoost500splits100learners8var0799percent;
     handles.netSVMruler = load('Networks/SVM/SVM_RulerID_BaggedTrees0906percent.mat');
     handles.netSVMruler = handles.netSVMruler.SVM_RulerID_BaggedTrees0906percent;
     handles.S = load('Networks/deeplabV3Plus_Lexi_dynamicCrop_MWK_network.mat');  
@@ -305,6 +307,13 @@ function Run_Callback(hObject,~,~)
     else
         handles.checkboxIND = false;
     end
+
+    % Check checkboxes for image quality
+    if handles.imfillMasksCB.Value
+        handles.imfillMasksCB = "True";
+    else
+        handles.imfillMasksCB = "False";
+    end
     
     % Get save freq
     defaultSave = 10;
@@ -338,7 +347,7 @@ function Run_Callback(hObject,~,~)
     % Run Operations!!!
     %[nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.dirOpen,handles.segOpts,handles.LeafMachine_SegNet_v1,5,handles.gpu_cpu,handles.visOpts,handles.filesSuffix,handles.dirSave_wSuffix,handles)
     [nFiles,BatchTime] = LeafMachineBatchSegmentation_GUI(handles.dirOpen,handles.dirOpen2,handles.LeafMachine_SegNet_v1,handles.SVM,handles.netSVMruler,handles.LCM,handles.LS,handles.checkboxIND,handles.saveFreq,feature,handles.gpu_cpu,...
-                        handles.local_url,handles.url_col,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
+                        handles.local_url,handles.url_col,handles.imfillMasksCB,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
     % GUI
     ArrowCursor();
     set(handles.fileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
@@ -375,6 +384,12 @@ function allFilesSuffix_CreateFcn(hObject, eventdata, handles)
 end
 
 function urlColumn_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in imfillMasksCB.
+function imfillMasksCB_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
     guidata(hObject,handles);
 end
@@ -464,6 +479,8 @@ end
 % 
 % alterPaths = {[oldPathDataSource newPathDataSource];[oldPathPixelLabel newPathPixelLabel]};
 % unresolvedPaths = changeFilePaths(kspace.gTruth,alterPaths)
+
+
 
 
 

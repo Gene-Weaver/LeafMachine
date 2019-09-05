@@ -1,7 +1,8 @@
 function downloadSubsetDWCimages(saveName)
     %saveName = 'COLO-V_Info';
     %downloadSubsetDWCimages('COLO-V_Info')
-
+    %downloadSubsetDWCimages('COLO_fixedCatalogID_Info')
+    
     %Open Base Dir
     baseDir = uigetdir();
     outDir = uigetdir();
@@ -13,8 +14,8 @@ function downloadSubsetDWCimages(saveName)
     occ = readtable(fullfile(baseDir,'occurrences.csv'));
     nSpecimens = length(occ.id);
 
-    headers = {'Herbarium','ID','occID','ImagesIndex','OccIndex','urlHigh','urlLow','Owner','Family','Genus','Species','Sciname'};
-    data = cell(nImg,12);
+    headers = {'Herbarium','ID','occID','catalogID','ImagesIndex','OccIndex','urlHigh','urlLow','Owner','Family','Genus','Species','Sciname'};
+    data = cell(nImg,13);
     herbInfo = cell2table(data);
     herbInfo.Properties.VariableNames = headers;
 
@@ -23,8 +24,9 @@ function downloadSubsetDWCimages(saveName)
     herbInfoF = cell2table(dataF);
     herbInfoF.Properties.VariableNames = headersF;
     f = 0;
-
-    for j = 1:nImg
+    
+    %for j = 1:nImg
+    for j = 1:20
         % Get info from images.csv
         ID = '';
         urlHigh = '';
@@ -48,27 +50,36 @@ function downloadSubsetDWCimages(saveName)
         sciname = occ.scientificName{j};
         herbCode = occ.institutionCode{j}; 
         occID = occ.id(j); 
+        catalogID = string(occ.catalogNumber(j));
+        clen = strlength(catalogID);
+        if clen ~= 8
+            cadd0 = 8 - clen;
+            cadd0_n = repmat('0',1,cadd0);
+            cjoin = [string(cadd0_n),catalogID];
+            catalogID = strjoin(cjoin,"");
+        end
+        catalogID = char(catalogID);
 
         filename = '';
         filenameH = '';
         if isempty(family)
             if isempty(sciname)
                 %Highres
-                fnameH = {outDir,'\',ID,'_H','.jpg'};
+                fnameH = {outDir,'\',catalogID,'_H','.jpg'};
                 filenameH = strjoin(fnameH,'');
                 %Lowres
-                fname = {outDir,'\',ID,'.jpg'};
+                fname = {outDir,'\',catalogID,'.jpg'};
                 filename = strjoin(fname,'');
             else
                 %Highres
                 nameH = strrep(occ.scientificName{j},' ','_');
-                fnameH = {herbCode,ID,nameH};
+                fnameH = {herbCode,catalogID,nameH};
                 fnameH = strjoin(fnameH,'_');
                 fnameH = {outDir,'\',fnameH,'_H','.jpg'};
                 filenameH = strjoin(fnameH,'');
                 %Lowres
                 name = strrep(occ.scientificName{j},' ','_');
-                fname = {herbCode,ID,name};
+                fname = {herbCode,catalogID,name};
                 fname = strjoin(fname,'_');
                 fname = {outDir,'\',fname,'.jpg'};
                 filename = strjoin(fname,'');
@@ -76,12 +87,12 @@ function downloadSubsetDWCimages(saveName)
         else
             % Filename when most variables are present
             %Highres
-            fnameH = {herbCode,ID,family,genus,species};
+            fnameH = {herbCode,catalogID,family,genus,species};
             fnameH = strjoin(fnameH,'_');
             fnameH = {outDir,'\',fnameH,'_H','.jpg'};
             filenameH = strjoin(fnameH,'');
             %Lowres
-            fname = {herbCode,ID,family,genus,species};
+            fname = {herbCode,catalogID,family,genus,species};
             fname = strjoin(fname,'_');
             fname = {outDir,'\',fname,'.jpg'};
             filename = strjoin(fname,'');
@@ -115,6 +126,7 @@ function downloadSubsetDWCimages(saveName)
         herbInfo.Herbarium{j} = herbCode;
         herbInfo.ID{j} = ID;
         herbInfo.occID{j} = occID;
+        herbInfo.catalogID{j} = catalogID;
         herbInfo.ImagesIndex{j} = j;
         herbInfo.OccIndex{j} = j;
         herbInfo.urlHigh{j} = urlHigh;

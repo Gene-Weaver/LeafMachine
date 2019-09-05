@@ -7,9 +7,9 @@
 %%%     Department of Ecology and Evolutionary Biology
 
 function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,netSVM,netSVMruler,saveLeafCandidateMasks,processLazySnapping,saveIND,saveFreq,...
-    feature,gpu_cpu,local_url,url_col,quality,filenameSuffix,destinationDirectory,handles,hObject)
+    feature,gpu_cpu,local_url,url_col,imfillMasks,quality,filenameSuffix,destinationDirectory,handles,hObject)
     % Initiate colormap
-    COLOR = colorcube(30);
+    %COLOR = colorcube(30);
     try 
         g = gpuDevice(1);
     catch
@@ -56,6 +56,10 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
         if processLazySnapping
             mkdir(fullfile(destinationDirectory,'Leaf_LazySnapping'))
         end
+        
+        if local_url == "url"
+            mkdir(fullfile(destinationDirectory,'Original'));
+        end
     else
         mkdir(destinationDirectory);
         mkdir(fullfile(destinationDirectory,'Overlay'));
@@ -79,6 +83,10 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
         if processLazySnapping
             mkdir(fullfile(destinationDirectory,'Leaf_LazySnapping'))
         end
+        
+        if local_url == "url"
+            mkdir(fullfile(destinationDirectory,'Original'));
+        end
     end
     
     leafData = [];
@@ -91,6 +99,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
         INDleaf = 1 + length(unique(prevDataTempFile.filename))
         continueRun = true;
     catch
+        prevDataTempFile.filename = ["NA","NA"];
         continueRun = false;
     end
     
@@ -103,7 +112,10 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
             IDr = int2str(ID);
             img0 = char(file.(url_col));
             % Find record in other csv
-            filename = filenameFromURL(imageInfo,filenameSuffix,ID,IDr)
+            if filenameSuffix ~= ""
+                filenameSuffix = strcat('_',filenameSuffix);
+            end
+            filename = filenameFromURL(imageInfo,imageLocation,filenameSuffix,ID,url_col)
             url = img0;
         else % local
             img0 = char(file.name);
@@ -116,6 +128,9 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
         guidata(hObject,handles);
         
         img = imread(img0);
+        if local_url == "url"
+            imwrite(img,strcat(fullfile(destinationDirectory,fullfile('Original',filename)),'.jpg'));
+        end
         familyStrings = strsplit(filename,{'.','_'});
         family = validateFamilyForSVM(familyStrings,handles.allPlantFamilies)
         
@@ -147,7 +162,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
 
     %         [conversionFactor] = calculateRulerConversionFactor(img,[DimN,DimM,DimZ],C,5,netSVMruler,filename,destinationDirectory);
 
-            [compositeGlobular,compositeLine,blobTable,globTable,lineTable,binaryMasks] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],family,megapixels,C,feature,30,4,COLOR,netSVM,saveLeafCandidateMasks,processLazySnapping,filename,destinationDirectory);
+            [compositeGlobular,compositeLine,blobTable,globTable,lineTable,binaryMasks] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],family,megapixels,C,feature,30,4,imfillMasks,netSVM,saveLeafCandidateMasks,processLazySnapping,filename,destinationDirectory);
 
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_Leaf'),binaryMasks{1},'leaf');
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_Stem'),binaryMasks{2},'stem');
