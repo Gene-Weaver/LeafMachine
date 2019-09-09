@@ -6,14 +6,14 @@
 %%%     University of Colorado, Boulder
 %%%     Department of Ecology and Evolutionary Biology
 
-function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,netSVM,netSVMruler,saveLeafCandidateMasks,processLazySnapping,saveIND,saveFreq,...
+function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,netSVM,netSVMruler,saveLeafCandidateMasks,processLazySnapping,saveIND,saveFreq,...
     feature,gpu_cpu,local_url,url_col,imfillMasks,quality,filenameSuffix,destinationDirectory,handles,hObject)
     % Initiate colormap
     %COLOR = colorcube(30);
     try 
         g = gpuDevice(1);
     catch
-        sprintf("GPU Not Available: using cpu instead")
+        fprintf("GPU not available: using cpu instead \n")
         gpu_cpu = 'cpu';
     end
         
@@ -95,8 +95,14 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
     % For resuming a failed or stopped run
     try
         fOutB = 'LeafMachine_BatchTemp.xlsx';
+%         opts = detectImportOptions(fOutB);
+%         opts = setvartype(opts,{'filename','predictionType','SVMprediction','time','megapixels','id','color','bbox','area','perimeter'},...
+%                         {'string','string','char','char','double','double','string','string','double','double'});
+%         prevDataTempFile2 = readtable(fullfile(fullfile(destinationDirectory,'Data_Temp'),fOutB),opts);
         prevDataTempFile = readtable(fullfile(fullfile(destinationDirectory,'Data_Temp'),fOutB));
-        INDleaf = 1 + length(unique(prevDataTempFile.filename))
+        INDleaf = 1 + length(unique(prevDataTempFile.filename));
+        formatSpecContRun = "Skipping to file %d \n";
+        fprintf(formatSpecContRun,INDleaf);
         continueRun = true;
     catch
         prevDataTempFile.filename = ["NA","NA"];
@@ -104,7 +110,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
     end
     
     % Loop through dir
-    timeA = tic();
+    timeRun = tic();
     for file = imgFiles'
         % Define output img filename
         if local_url == "url" % url
@@ -115,15 +121,20 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
             if filenameSuffix ~= ""
                 filenameSuffix = strcat('_',filenameSuffix);
             end
-            filename = filenameFromURL(imageInfo,imageLocation,filenameSuffix,ID,url_col)
+            filename = filenameFromURL(imageInfo,imageLocation,filenameSuffix,ID,url_col);
             url = img0;
         else % local
             img0 = char(file.name);
             filename = strsplit(string(img0),".");
             filename = char(filename{1});
-            filename = strcat(filename,filenameSuffix)
+            if filenameSuffix ~= ""
+                filenameSuffix = strcat('_',filenameSuffix);
+            end
+            filename = strcat(filename,filenameSuffix);
             url = 'NA';
         end
+        formatSpecFilename = "Specimen Filename: %s \n";
+        fprintf(formatSpecFilename,filename);
         set(handles.progress,'String',strcat("Working on: ",filename),'ForegroundColor',[0 .45 .74]);
         guidata(hObject,handles);
         
@@ -132,17 +143,29 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
             imwrite(img,strcat(fullfile(destinationDirectory,fullfile('Original',filename)),'.jpg'));
         end
         familyStrings = strsplit(filename,{'.','_'});
-        family = validateFamilyForSVM(familyStrings,handles.allPlantFamilies)
+        family = validateFamilyForSVM(familyStrings,handles.allPlantFamilies);
+        formatSpecFamily = "Specimen Family: %s \n";
+        fprintf(formatSpecFamily,family)
         
         [DimN,DimM,DimZ] = size(img);
         Dim = min(DimN,DimM);
         megapixels = DimN*DimM/1000000;
+        
+        formatSpecMP = "Specimen Megapixels: %.2d \n";
+        fprintf(formatSpecMP,megapixels)
        
            
         % New File
         if ~ismember(filename,prevDataTempFile.filename)% || (continueRun == false)
+            formatSpecS = "     Time --- Segmentation: %.3f seconds \n";
+            timeS = tic();
+            
             try
-                sprintf("GPU/CPU Image Loop")
+                if gpu_cpu == "gpu"
+                    fprintf("     Segmentation running on GPU \n")
+                else
+                    fprintf("     Segmentation running on CPU \n")
+                end
                 filenameSeg = char(strcat(filename,'_Segment'));
 
                 [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,fullfile(destinationDirectory,'Segmentation'),img,gpu_cpu,quality);%%%Original basic version
@@ -151,7 +174,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
                 end
 
             catch 
-                sprintf("Forced CPU Image Loop")
+                fprintf("     ***VRAM exceeded, running on CPU instead \n")
                 filenameSeg = char(strcat(filename,'_Segment'));
                 if gpu_cpu == "gpu"
                     reset(g);
@@ -159,18 +182,26 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
 
                 [imgCNN,C,score,allScores] = basicSegmentation(net,filenameSeg,fullfile(destinationDirectory,'Segmentation'),img,'cpu',quality);%%%Original basic version
             end
+            timeS = toc(timeS); 
+            fprintf(formatSpecS,timeS)
 
     %         [conversionFactor] = calculateRulerConversionFactor(img,[DimN,DimM,DimZ],C,5,netSVMruler,filename,destinationDirectory);
 
             [compositeGlobular,compositeLine,blobTable,globTable,lineTable,binaryMasks] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],family,megapixels,C,feature,30,4,imfillMasks,netSVM,saveLeafCandidateMasks,processLazySnapping,filename,destinationDirectory);
-
+            
+            formatSpecA = "     Time --- Save binary images: %.3f seconds \n";
+            timeA = tic();
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_Leaf'),binaryMasks{1},'leaf');
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_Stem'),binaryMasks{2},'stem');
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_FruitFlower'),binaryMasks{3},'fruitFlower');
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_Background'),binaryMasks{4},'background');
             saveBinaryMasks(filename,fullfile(destinationDirectory,'Class_Text'),binaryMasks{5},'text');
+            timeA = toc(timeA); 
+            fprintf(formatSpecA,timeA)
 
             % Merge tables for Overlay img
+            timeB = tic();
+            
             filenameOverlay = char(strcat(filename,'_Overlay'));
             if ~isempty(blobTable)
                 overlayTable.measurements = blobTable.measurements;
@@ -219,7 +250,7 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
             end
 
 
-            % Unpack data for export and plotting festures overlay
+            % Unpack data for export and plotting features overlay
             %%% Initial SVM
             dataHeaders = {'filename','predictionType','SVMprediction','time','megapixels','id','color','bbox','area','perimeter'};
 
@@ -373,6 +404,10 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
                 writetable(leafData,fullfile(fullfile(destinationDirectory,'Data_Temp'),fOutB));
             end
             INDleaf = INDleaf + 1;
+            
+            formatSpecB = "     Time --- Export data and overlay: %.3f seconds \n";
+            timeB = toc(timeB); 
+            fprintf(formatSpecB,timeB)
         else % For image that has already been run
             sprintf(strjoin({filename,'--Image already run'},''))
         end
@@ -380,8 +415,11 @@ function [fLen,T] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,net,ne
     
     fOut = ['LeafMachine_Batch__',datestr(now,'mm-dd-yyyy_HH-MM'),'__FINAL.xlsx'];
     writetable(leafData,fullfile(fullfile(destinationDirectory,'Data'),fOut));
-    T = toc(timeA);
-    T = string(round(T,2));
+    
+    timeRun = toc(timeRun);
+    formatSpecRun = "Batch Complete: %s images processed in %.3f seconds \n";
+    fprintf(formatSpecRun,fLen,timeRun)
+    timeRun = string(round(timeRun,3));
 end
 
 

@@ -23,18 +23,14 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
     
     INDblob_fail = 1;
     blobFails = {};
-    n
+   
     % Iterate through glob candidate blobs
     if n > 0
         for i = 1:n
             % Crop imgOrig to the bounds + a bit extra 
-            if imfillMasks == "True"
-                blobBox_temp = regionprops(label==i, 'BoundingBox');
-                blobBox_tempLeaf = regionprops(imfill(label==i,'holes'), 'BoundingBox');
-            elseif imfillMasks == "False"
-                blobBox_temp = regionprops(label==i, 'BoundingBox');
-                blobBox_tempLeaf = regionprops(label==i, 'BoundingBox');
-            end
+            
+            blobBox_temp = regionprops(label==i, 'BoundingBox');
+            blobBox_tempLeaf = regionprops(label==i, 'BoundingBox');
             
             bound = round(blobBox_temp.BoundingBox);
             % Expand bbox a bit
@@ -52,10 +48,22 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                 imgCropBlob = imcrop(imgOrig,bound);
                 labelBlobCrop = imcrop(label==i,bound);
                 labelBlobCropLeaf = imcrop(imfill(label==i,'holes'),bound);
+                
+%                 figure(1);
+%                 imshow(labelBlobCrop);
+%                 figure(2);
+%                 imshow(labelBlobCropLeaf);
+                
             elseif imfillMasks == "False"
                 imgCropBlob = imcrop(imgOrig,bound);
                 labelBlobCrop = imcrop(label==i,bound);
                 labelBlobCropLeaf = imcrop(label==i,bound);
+                
+%                 figure(1);
+%                 imshow(labelBlobCrop);
+%                 figure(2);
+%                 imshow(labelBlobCropLeaf);
+                
             end
             
 
@@ -99,8 +107,13 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     INDblob = INDblob + 1;
 
                 elseif yfit == "partialLeaf"
+                    %*** I turned on the imfill option for all classes for
+                    %the validation images. Turn on %*% lines for
+                    %production
+                    
                     % Save binary --optional, used for SVM training
-                    saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),labelBlobCrop,['LeafPartial__SVM__BINARY__',int2str(i)]);
+                    saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),labelBlobCropLeaf,['LeafPartial__SVM__BINARY__',int2str(i)]);
+                    %*%saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),labelBlobCrop,['LeafPartial__SVM__BINARY__',int2str(i)]);
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),imgCropBlob,['LeafPartial__SVM__RGB__',int2str(i)]);
 
                     % Get color
@@ -108,7 +121,8 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.colorReport{INDblob} = strjoin(['[',strjoin(string([0, 0.4470, 0.7410]),' '),']'],''); 
 
                     % Get measurements
-                    blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
+                    blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCropLeaf,bound);
+                    %*%blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
 
                     %%% Save measurements upon "leaf" success
                     % Export final leaf binary
@@ -117,17 +131,21 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.time{INDblob} = datestr(now,'mm-dd-yyyy HH-MM-SS.FFF');
                     blobTable.bbox{INDblob} = blobBox_temp;
                     blobTable.bboxReport{INDblob} = strjoin(['[',strjoin(string(blobBox_temp.BoundingBox),' '),']'],'');
-                    blobTable.area{INDblob} = bwarea(labelBlobCrop);
-                    blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
+                    blobTable.area{INDblob} = bwarea(labelBlobCropLeaf);
+                    %*%blobTable.area{INDblob} = bwarea(labelBlobCrop);
+                    blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCropLeaf,'Perimeter'));
+                    %*%blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
 
-                    blobFails{INDblob_fail} = labelBlobCrop;
+                    blobFails{INDblob_fail} = labelBlobCropLeaf;
+                    %*%blobFails{INDblob_fail} = labelBlobCrop;
                     INDblob_fail = INDblob_fail + 1;
 
                     INDblob = INDblob + 1;
 
                 elseif yfit == "clump"
                     % Save binary --optional, used for SVM training
-                    saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),labelBlobCrop,['LeafClump__SVM__BINARY__',int2str(i)]);
+                    saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),labelBlobCropLeaf,['LeafClump__SVM__BINARY__',int2str(i)]);
+                    %*%saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),labelBlobCrop,['LeafClump__SVM__BINARY__',int2str(i)]);
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),imgCropBlob,['LeafClump__SVM__RGB__',int2str(i)]);
 
                     % Get color
@@ -135,7 +153,8 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.colorReport{INDblob} = strjoin(['[',strjoin(string([0.8500, 0.3250, 0.0980]),' '),']'],''); 
 
                     % Get measurements
-                    blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
+                    blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCropLeaf,bound);
+                    %*%blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
 
                     %%% Save measurements upon "leaf" success
                     % Export final leaf binary
@@ -144,10 +163,13 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.time{INDblob} = datestr(now,'mm-dd-yyyy HH-MM-SS.FFF');
                     blobTable.bbox{INDblob} = blobBox_temp;
                     blobTable.bboxReport{INDblob} = strjoin(['[',strjoin(string(blobBox_temp.BoundingBox),' '),']'],'');
-                    blobTable.area{INDblob} = bwarea(labelBlobCrop);
-                    blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
+                    blobTable.area{INDblob} = bwarea(labelBlobCropLeaf);
+                    %*%blobTable.area{INDblob} = bwarea(labelBlobCrop);
+                    blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCropLeaf,'Perimeter'));
+                    %*%blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
 
-                    blobFails{INDblob_fail} = labelBlobCrop;
+                    blobFails{INDblob_fail} = labelBlobCropLeaf;
+                    %*%blobFails{INDblob_fail} = labelBlobCrop;
                     INDblob_fail = INDblob_fail + 1;
 
                     INDblob = INDblob + 1;

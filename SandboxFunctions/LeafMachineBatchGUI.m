@@ -53,12 +53,8 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     addpath(genpath('SandboxFunctions'));
     addpath(genpath('Training_Images'));
     
-    try
-        nnet.internal.cnngpu.reluForward(gpuArray(0));
-    catch
-        nnet.internal.cnngpu.reluForward(gpuArray(0));
-    end
-
+    matlabGPUcheck()
+    
     % Placeholder Images
 %     handles.S = load('Networks/LeafMachine_SegNet_v1.mat');  
 %     handles.LeafMachine_SegNet_v1 = handles.S.LeafMachine_SegNet_v1;
@@ -87,6 +83,7 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     set(handles.uibuttongroup5,'selectedobject',handles.radiobuttonLocal);
     set(handles.uibuttongroup6,'selectedobject',handles.dwc_high);
     handles.url_col_radio = "NA";
+    handles.dirFGFile = "noFilter";
     
     guidata(hObject, handles);
 end
@@ -232,6 +229,25 @@ function Run_Callback(hObject,~,~)
         handles.url_col_radio = "goodQualityAccessURI";
     end
     
+    
+    %%% Filter Group Module
+    set(handles.filterGroup,'SelectionChangeFcn',@filterGroup_SelectionChangedFcn)
+    % Check radiobuttons for Filter Group
+    if handles.dirFGFile == "noFilter"
+        handles.FGfilter = "noFilter";
+    else
+        if handles.FGfamily.Value
+            handles.FGfilter = "family";
+        elseif handles.FGgenera.Value
+            handles.FGfilter = "genera";
+        elseif handles.FGspecies.Value
+            handles.FGfilter = "species";
+        else
+            handles.FGfilter = "noFilter";
+        end
+    end
+    
+    
     % If user did not set open dir prior to run
     if handles.radiobuttonLocal.Value == 0
     else
@@ -347,7 +363,7 @@ function Run_Callback(hObject,~,~)
     % Run Operations!!!
     %[nFiles,BatchTime] = LeafMachineBatchSegmentation(handles.dirOpen,handles.segOpts,handles.LeafMachine_SegNet_v1,5,handles.gpu_cpu,handles.visOpts,handles.filesSuffix,handles.dirSave_wSuffix,handles)
     [nFiles,BatchTime] = LeafMachineBatchSegmentation_GUI(handles.dirOpen,handles.dirOpen2,handles.LeafMachine_SegNet_v1,handles.SVM,handles.netSVMruler,handles.LCM,handles.LS,handles.checkboxIND,handles.saveFreq,feature,handles.gpu_cpu,...
-                        handles.local_url,handles.url_col,handles.imfillMasksCB,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject)
+                        handles.local_url,handles.url_col,handles.imfillMasksCB,handles.quality,handles.filesSuffix,handles.dirSave_wSuffix,handles,hObject);
     % GUI
     ArrowCursor();
     set(handles.fileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
@@ -356,10 +372,69 @@ function Run_Callback(hObject,~,~)
 end
 
 
+
+% --- Executes on button press in customSet.
+function customSet_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in customOut.
+function customOut_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject); 
+    try
+        % Choose folder location
+        [handles.dirCustomOut] = uigetdir('Choose Save Location');
+        addpath(handles.dirCustomOut)
+
+        % Update GUI
+        set(handles.customOut,'BackgroundColor',[.47 .67 .19]);
+    catch 
+    end
+    guidata(hObject, handles);
+end
+
+% --- Executes on button press in customRun.
+function customRun_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in FGset.
+function FGset_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject); 
+    % Choose file
+    [handles.dirFGFileName,handles.dirFGPath] = uigetfile({'*.csv'},'Choose .csv File Containing URLs in a Column');
+    addpath(handles.dirFGPath);
+    handles.dirFGFile = fullfile(handles.dirFGPath,handles.dirFGFileName);
+    
+    % Update GUI
+    set(handles.FGset,'BackgroundColor',[.47 .67 .19]);
+    
+    guidata(hObject, handles);
+end
+
+% --- Executes on button press in Dimages.
+function Dimages_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in Docc.
+function Docc_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in Drun.
+function Drun_Callback(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    guidata(hObject,handles);
+end
+
 function Stop_Callback(hObject, eventdata, handles)
     closereq
 end
-
 
 function saveFolderSuffix_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
@@ -439,6 +514,22 @@ function uibuttongroup6_SelectionChangedFcn(hObject, eventdata, handles)
     guidata(hObject,handles);
 end
 
+% --- Executes when selected object is changed in filterGroup.
+function filterGroup_SelectionChangedFcn(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    
+    set(handles.filterGroup,'SelectionChangeFcn',@filterGroup_SelectionChangedFcn)
+    switch(get(eventdata.NewValue,'Tag'))
+        case 'FGfamily'
+            handles.FGfilter = "family";
+        case 'FGgenera'
+            handles.FGfilter = "genera";
+        case 'FGspecies'
+            handles.FGfilter = "species";
+    end
+    guidata(hObject,handles);
+end
+
 
 % --- Executes on button press in quality.
 function quality_Callback(hObject, eventdata, handles)
@@ -479,19 +570,6 @@ end
 % 
 % alterPaths = {[oldPathDataSource newPathDataSource];[oldPathPixelLabel newPathPixelLabel]};
 % unresolvedPaths = changeFilePaths(kspace.gTruth,alterPaths)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

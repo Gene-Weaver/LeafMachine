@@ -28,14 +28,17 @@ function [compositeGlobular,compositeLine,blobTable,globData,lineData,binaryMask
     composite = bwareaopen(binaryMasks{feature},50);
     [label, n] = bwlabel(composite);
     % Pass candidate masks to SVM, those that fail send to runLazySnappingForBlobs
-    sprintf("initialSVMcheckAndClean")
-    timeB = tic();
+    
+    formatSpec = "     SVM processed %d binary objects in %.3f seconds \n";
+    timeA = tic();
     
     [blobTable,blobFails] = initialSVMcheckAndClean(label,n,img,family,megapixels,imfillMasks,netSVM,saveLeafCandidateMasks,filename,destinationDirectory);
-    toc(timeB)
     
-    sprintf("blobFails")
-    timeC = tic();
+    timeA = toc(timeA); 
+    fprintf(formatSpec,n,timeA)
+    
+    %sprintf("blobFails")
+    %timeC = tic();
     
     if ~isempty(blobFails)
         if processLazySnapping
@@ -58,18 +61,18 @@ function [compositeGlobular,compositeLine,blobTable,globData,lineData,binaryMask
 
             [globData,lineData] = runLazySnappingForBlobs(labelGlob,labelLine,nGlob,nLine,img,imgSize,family,megapixels,COLOR,netSVM,saveLeafCandidateMasks,filename,fullfile(destinationDirectory,'Leaf_LazySnapping'));
         else
-            sprintf("blobFails is empty")
+            %sprintf("blobFails is empty")
             compositeLine = [];
             compositeGlobular = [];
             globData = [];
             lineData = [];
         end
     else
-        sprintf("blobFails is empty")
+        %sprintf("blobFails is empty")
         compositeLine = [];
         compositeGlobular = [];
         globData = [];
         lineData = [];
     end
-    toc(timeC);
+    %toc(timeC);
 end
