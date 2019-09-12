@@ -57,10 +57,10 @@ function GUI_Auto_Distance_OpeningFcn(hObject, eventdata, handles, varargin)
     try
         gpuDevice;
         handles.GPUstatus = 'TRUE';
-        sprintf("GPU Available")
+        fprintf("*** GPU Available *** \n")
     catch
         handles.GPUstatus = 'FALSE';
-        sprintf("GPU Not Available")
+        fprintf("*** GPU Not Available *** \n")
     end
     
     addpath(genpath('Img'));

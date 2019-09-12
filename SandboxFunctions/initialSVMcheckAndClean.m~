@@ -6,6 +6,11 @@
 %%%     University of Colorado, Boulder
 %%%     Department of Ecology and Evolutionary Biology
 
+%%% Run watershed cleanup
+%%% 
+
+
+
 
 function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,megapixels,imfillMasks,imfillMasksPartial,imfillMasksClump,netSVM,saveLeafCandidateMasks,filename,destinationDirectory)
     % Blob
@@ -59,7 +64,7 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
             if imfillMasksClump == "True"
                 labelBlobCropClump = labelBlobCropFilled;
             else
-                labelBlobCropClump = labelBlobCrop;
+                labelBlobCropClmup = labelBlobCrop;
             end
             
             
@@ -106,6 +111,7 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                 elseif yfit == "partialLeaf"
                     % Save binary --optional, used for SVM training
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),labelBlobCropPartial,['LeafPartial__SVM__BINARY__',int2str(i)]);
+                    %*%saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),labelBlobCrop,['LeafPartial__SVM__BINARY__',int2str(i)]);
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Partial'),imgCropBlob,['LeafPartial__SVM__RGB__',int2str(i)]);
 
                     % Get color
@@ -114,6 +120,7 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
 
                     % Get measurements
                     blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCropPartial,bound);
+                    %*%blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
 
                     %%% Save measurements upon "leaf" success
                     % Export final leaf binary
@@ -123,9 +130,12 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.bbox{INDblob} = blobBox_temp;
                     blobTable.bboxReport{INDblob} = strjoin(['[',strjoin(string(blobBox_temp.BoundingBox),' '),']'],'');
                     blobTable.area{INDblob} = bwarea(labelBlobCropPartial);
+                    %*%blobTable.area{INDblob} = bwarea(labelBlobCrop);
                     blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCropPartial,'Perimeter'));
+                    %*%blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
 
                     blobFails{INDblob_fail} = labelBlobCropPartial;
+                    %*%blobFails{INDblob_fail} = labelBlobCrop;
                     INDblob_fail = INDblob_fail + 1;
 
                     INDblob = INDblob + 1;
@@ -133,6 +143,7 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                 elseif yfit == "clump"
                     % Save binary --optional, used for SVM training
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),labelBlobCropClump,['LeafClump__SVM__BINARY__',int2str(i)]);
+                    %*%saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),labelBlobCrop,['LeafClump__SVM__BINARY__',int2str(i)]);
                     saveBinaryMasks(filename,fullfile(destinationDirectory,'Leaf_Clump'),imgCropBlob,['LeafClump__SVM__RGB__',int2str(i)]);
 
                     % Get color
@@ -141,6 +152,7 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
 
                     % Get measurements
                     blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCropClump,bound);
+                    %*%blobTable.measurements{INDblob} = measureLeafFeatures(labelBlobCrop,bound);
 
                     %%% Save measurements upon "leaf" success
                     % Export final leaf binary
@@ -150,9 +162,12 @@ function [blobTable,blobFails] = initialSVMcheckAndClean(label,n,imgOrig,family,
                     blobTable.bbox{INDblob} = blobBox_temp;
                     blobTable.bboxReport{INDblob} = strjoin(['[',strjoin(string(blobBox_temp.BoundingBox),' '),']'],'');
                     blobTable.area{INDblob} = bwarea(labelBlobCropClump);
+                    %*%blobTable.area{INDblob} = bwarea(labelBlobCrop);
                     blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCropClump,'Perimeter'));
+                    %*%blobTable.perimeter{INDblob} = struct2array(regionprops(labelBlobCrop,'Perimeter'));
 
                     blobFails{INDblob_fail} = labelBlobCropClump;
+                    %*%blobFails{INDblob_fail} = labelBlobCrop;
                     INDblob_fail = INDblob_fail + 1;
 
                     INDblob = INDblob + 1;

@@ -413,29 +413,22 @@ end
 % --- Executes on button press in customSet.
 function customSet_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
-    try
-        % Choose file
-        [handles.dircustomSetFileName,handles.dircustomSetPath] = uigetfile({'*.csv','*.xlsx'},'Select the Custom "occurences.csv" File');
-        addpath(handles.dircustomSetPath);
-        handles.tableCustomSet = readtable(fullfile(handles.dircustomSetPath,handles.dircustomSetFileName));
     
-        % Update GUI
-        set(handles.customSet,'BackgroundColor',[.47 .67 .19]);
-    catch
-    end
+    
+    
     guidata(hObject,handles);
 end
 % --- Executes on button press in customSetImages.
 function customSetImages_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
     try
-        % Choose file
-        [handles.dircustomSetImagesFileName,handles.dircustomSetImagesPath] = uigetfile({'*.csv','*.xlsx'},'Select the Full "images.csv" File');
-        addpath(handles.dircustomSetImagesPath);
-        handles.tableCustomSetImages = readtable(fullfile(handles.dircustomSetImagesPath,handles.dircustomSetImagesFileName));
-
-        % Update GUI
-        set(handles.customSetImages,'BackgroundColor',[.47 .67 .19]);
+    % Choose file
+    [handles.dirFGFileName,handles.dirFGPath] = uigetfile({'*.csv','*.xlsx','*.xls'},'Choose the Full .csv File Containing URLs in a Column');
+    addpath(handles.dirFGPath);
+    handles.dirFGFile = readtable(fullfile(handles.dirFGPath,handles.dirFGFileName));
+    
+    % Update GUI
+    set(handles.FGset,'BackgroundColor',[.47 .67 .19]);
     catch
     end
     guidata(hObject,handles);
@@ -460,10 +453,7 @@ end
 function customRun_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
     
-    generateCustomImagesFile(handles.tableCustomSetImages,handles.tableCustomSet,handles.dirCustomOut)
     
-    closereq
-    LeafMachineBatchGUI
     
     guidata(hObject,handles);
 end
@@ -587,7 +577,7 @@ function uibuttongroup5_SelectionChangedFcn(hObject, eventdata, handles)
             handles.radiobuttonURL = 1;
     end
     
-    guidata(hObject,handles);matlab default background color
+    guidata(hObject,handles);
 end
 
 % --- Executes during object creation, after setting all properties.

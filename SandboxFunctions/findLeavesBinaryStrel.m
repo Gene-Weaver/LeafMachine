@@ -15,7 +15,7 @@
 
 
 function [compositeGlobular,compositeLine,blobTable,globData,lineData,binaryMasks] = findLeavesBinaryStrel(img,imgSize,family,megapixels,C,feature,...
-    radius,cirAprox,imfillMasks,netSVM,saveLeafCandidateMasks,processLazySnapping,filename,destinationDirectory)
+    radius,cirAprox,imfillMasks,imfillMasksPartial,imfillMasksClump,netSVM,saveLeafCandidateMasks,processLazySnapping,filename,destinationDirectory)
     % Build strel size
     % Default: radius = 30, cirAprox = 4
     SE = setStrelSize(radius,cirAprox);
@@ -32,7 +32,7 @@ function [compositeGlobular,compositeLine,blobTable,globData,lineData,binaryMask
     formatSpec = "     SVM processed %d binary objects in %.3f seconds \n";
     timeA = tic();
     
-    [blobTable,blobFails] = initialSVMcheckAndClean(label,n,img,family,megapixels,imfillMasks,netSVM,saveLeafCandidateMasks,filename,destinationDirectory);
+    [blobTable,blobFails] = initialSVMcheckAndClean(label,n,img,family,megapixels,imfillMasks,imfillMasksPartial,imfillMasksClump,netSVM,saveLeafCandidateMasks,filename,destinationDirectory);
     
     timeA = toc(timeA); 
     fprintf(formatSpec,n,timeA)
