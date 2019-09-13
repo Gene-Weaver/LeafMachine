@@ -246,7 +246,7 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
                     if ~isempty(overlayTable.measurements)
                         buildImageOverlayDilate(img,megapixels,length(overlayTable.measurements),overlayTable.measurements,overlayTable.color,fullfile(destinationDirectory,'Overlay'),filenameOverlay,quality);
                     else
-                        fprintf("     * Notice * No leaf candidates were located")
+                        fprintf("     * Notice * No leaf candidates were located \n")
                     end
                 elseif saveOverlayImages == "False"
                     formatSpecB = "     Time --- Export data: %.3f seconds \n";

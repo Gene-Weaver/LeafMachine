@@ -110,6 +110,9 @@ function [filenameReturn,family,genus,species] = filenameFromURL(occ,images,file
         filenameReturn = filenameH;
     end
     
+    INVAL = {'\', '/', ':', '*', '?', '"', '<', '>', '|', '@', '.'};
+    filenameReturn = replace(filenameReturn,INVAL,'_');
+    
     if family == ""; family = "NA";end
     if genus == ""; genus = "NA";end
     if species == ""; species = "NA";end

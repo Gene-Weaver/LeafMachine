@@ -48,10 +48,10 @@ function [filenameReturn,family,genus,species] = filenameFromURL(occ,images,file
     C = 0;
     C = find(occ.id==ID);
     % Get info from occurrences.csv
-    family = '';
-    genus = '';
-    species = '';
-    sciname = '';
+    family = "";
+    genus = "";
+    species = "";
+    sciname = "";
     family = occ.family{C};
     genus = occ.genus{C};
     species = occ.specificEpithet{C};
@@ -110,7 +110,13 @@ function [filenameReturn,family,genus,species] = filenameFromURL(occ,images,file
         filenameReturn = filenameH;
     end
     
-    if family == '';
-    genus = '';
-    species = '';
+    INVAL = ['\', '/', ':', '*', '?', '"', '<', '>', '|', '@', '.'];
+    filenameReturn = regexprep(filenameReturn,'\/:,*?"<>|@.[]','_')
+    filenameReturn(regexp(filenameReturn,('\/:,*?"<>|@.[]'))) = ""
+    filenameReturn = strrep(filenameReturn,INVAL,'_');
+    filenameReturn(~ismember(filenameReturn,['\':'/':':':'*':'?':'"':'<':'>':'|':'@':'.'])) = ''
+    
+    if family == ""; family = "NA";end
+    if genus == ""; genus = "NA";end
+    if species == ""; species = "NA";end
 end
