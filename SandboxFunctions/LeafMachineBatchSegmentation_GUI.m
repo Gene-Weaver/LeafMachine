@@ -31,8 +31,12 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
         fLen = length(imgFiles);
         fLen = string(fLen);
     else
-        imageLocation = readtable(Directory);
-        imageInfo = readtable(Directory2);
+        opts1 = detectImportOptions(Directory);
+        opts1 = setvartype(opts1,{'coreid'},{'double'});
+        imageLocation = readtable(Directory,opts1);
+        opts2 = detectImportOptions(Directory2);
+        opts2 = setvartype(opts2,{'id','catalogNumber'},{'double','char'});
+        imageInfo = readtable(Directory2,opts2);
         imgFiles = table2struct(imageLocation);
         fLen = num2str(length(imgFiles));
         %%% HIGH = accessURI	VERY LOW = thumbnailAccessURI	MEDIUM = goodQualityAccessURI
@@ -82,6 +86,7 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
                 filenameSuffix = filenameSuffix0;
             end
             [filename,returnFamily,returnGenus,returnSpecies] = filenameFromURL(imageInfo,imageLocation,filenameSuffix,ID,url_col);
+            familyStrings = strsplit(filename,{'.','_'});
             url = img0;
         else % local
             img0 = char(file.name);
@@ -93,6 +98,30 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
                 filenameSuffix = filenameSuffix0;
             end
             filename = strcat(filename,filenameSuffix);
+            % Try to get family genus species
+            familyStrings = strsplit(filename,{'.','_'});
+            [family,famPos] = validateFamilyForSVM(familyStrings,handles.allPlantFamilies);
+            if family ~= "NaN"
+                try
+                    returnFamily = familyStrings{famPos};
+                catch
+                    returnFamily = "NA";
+                end
+                try 
+                    returnGenus = familyStrings{famPos+1};
+                catch
+                    returnGenus = "NA";
+                end
+                try 
+                    returnSpecies = familyStrings{famPos+2};
+                catch
+                    returnSpecies = "NA";
+                end
+            else %Family = NaN
+                returnFamily = "NA";
+                returnGenus = "NA";
+                returnSpecies = "NA";
+            end
             url = 'NA';
         end
         
@@ -121,15 +150,17 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
             end
             timeURL = toc(timeURL);
         else
+            timeURL = tic();
             try
                 img = imread(img0);
                 imgSkip = "RUN";
             catch
-                formatSpecSkip = "*** Notice *** Specimen %s was skipped, the file is missing or corrupt \n";
+                formatSpecSkip = "*** Notice *** Specimen %s was skipped, the file may be corrupt \n";
                 fprintf(formatSpecSkip,filename)
                 imgSkip = "SKIP";
-                imgSkipReason = "Broken_URL";
+                imgSkipReason = "File_May_Be_Corrupt";
             end
+            timeURL = toc(timeURL);
         end
         
         % Assess filter for skipping
@@ -200,11 +231,15 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
                 end
                 timeS = toc(timeS); 
                 fprintf(formatSpecS,timeS)
-
-                formatSpecURL = "     Time --- Download image from URL: %.3f \n";
+                
+                if local_url == "url"
+                    formatSpecURL = "     Time --- Download image from URL: %.3f \n";
+                else
+                    formatSpecURL = "     Time --- Open image: %.3f \n";
+                end
                 fprintf(formatSpecURL,timeURL);
 
-        %         [conversionFactor] = calculateRulerConversionFactor(img,[DimN,DimM,DimZ],C,5,netSVMruler,filename,destinationDirectory);
+%                 [conversionFactor] = calculateRulerConversionFactor(img,[DimN,DimM,DimZ],C,5,netSVMruler,filename,destinationDirectory);
 
                 [compositeGlobular,compositeLine,blobTable,globTable,lineTable,binaryMasks] = findLeavesBinaryStrel(img,[DimN,DimM,DimZ],family,megapixels,C,feature,30,4,...
                                                                                               imfillMasks,imfillMasksPartial,imfillMasksClump,netSVM,saveLeafCandidateMasks,...
@@ -395,9 +430,15 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
                 
                 % Add family, genus, species to output file
                 addL = height(singleLeafData);
-                addFamily = table(string(repmat(returnFamily,addL,1)));
-                addGenus = table(string(repmat(returnGenus,addL,1)));
-                addSpecies = table(string(repmat(returnSpecies,addL,1)));
+                if local_url == "url"
+                    addFamily = table(string(repmat(returnFamily,addL,1)));
+                    addGenus = table(string(repmat(returnGenus,addL,1)));
+                    addSpecies = table(string(repmat(returnSpecies,addL,1)));
+                else
+                    addFamily = table(string(repmat(returnFamily,addL,1)));
+                    addGenus = table(string(repmat(returnGenus,addL,1)));
+                    addSpecies = table(string(repmat(returnSpecies,addL,1)));
+                end
                 addFamily.Properties.VariableNames = {'family'};
                 addGenus.Properties.VariableNames = {'genus'};
                 addSpecies.Properties.VariableNames = {'species'};
@@ -482,6 +523,8 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
         fprintf("*** Processing has Stopped *** \n \n \n")
     end
 end
+
+
 
 
 

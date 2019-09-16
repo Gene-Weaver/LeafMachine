@@ -18,6 +18,7 @@ function buildFileStructure(destinationDirectory,saveLeafCandidateMasks,processL
     if ~exist(fullfile(destinationDirectory,'Segmentation'), 'dir');mkdir(fullfile(destinationDirectory,'Segmentation'));end
     if ~exist(fullfile(destinationDirectory,'Data'), 'dir');mkdir(fullfile(destinationDirectory,'Data'));end
     if ~exist(fullfile(destinationDirectory,'Data_Temp'), 'dir');mkdir(fullfile(destinationDirectory,'Data_Temp'));end
+    if ~exist(fullfile(destinationDirectory,'Skipped_Files'), 'dir');mkdir(fullfile(destinationDirectory,'Skipped_Files'));end  
 
     if ~exist(fullfile(destinationDirectory,'Leaf'), 'dir');mkdir(fullfile(destinationDirectory,'Leaf'));end
     if ~exist(fullfile(destinationDirectory,'Leaf_Partial'), 'dir');mkdir(fullfile(destinationDirectory,'Leaf_Partial'));end
@@ -39,7 +40,6 @@ function buildFileStructure(destinationDirectory,saveLeafCandidateMasks,processL
 
     if local_url == "url"
         if ~exist(fullfile(destinationDirectory,'Original'), 'dir');mkdir(fullfile(destinationDirectory,'Original'));end
-        if ~exist(fullfile(destinationDirectory,'Skipped_Files'), 'dir');mkdir(fullfile(destinationDirectory,'Skipped_Files'));end  
     end
     timeFile = toc(timeFile);
     fprintf(formatSpec,timeFile);

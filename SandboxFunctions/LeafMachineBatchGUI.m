@@ -214,7 +214,7 @@ function Run_Callback(hObject,~,~)
     handles = guidata(hObject); 
     RESET = get(handles.Run,'String');
     if RESET == "Run"
-%         try
+        try
             set(handles.uibuttongroup5,'SelectionChangeFcn',@uibuttongroup5_SelectionChangedFcn)
             % Check radiobuttons for local_URL status
             if handles.radiobuttonLocal.Value
@@ -249,8 +249,7 @@ function Run_Callback(hObject,~,~)
                     handles.FGfilter = "noFilter";
                 end
             end
-
-
+            
             % If user did not set open dir prior to run
             if handles.radiobuttonLocal.Value == 0
             else
@@ -268,6 +267,8 @@ function Run_Callback(hObject,~,~)
                     guidata(hObject,handles);
                 end
             end
+            
+            
             % If user did not set save dir prior to run
             if handles.saveLocationText.String == "Location not set..."
                 % Choose folder location
@@ -394,14 +395,14 @@ function Run_Callback(hObject,~,~)
             set(handles.fileSaveDisp,'String',strcat(nFiles," Images Processed in ",BatchTime," Seconds"),'ForegroundColor',[0 .45 .74]);
             set(handles.Run,'String',"Reset",'BackgroundColor',[0, 0.4470, 0.7410]);
             guidata(hObject,handles);
-%         catch ME
-%             ArrowCursor();
-%             guidata(hObject,handles);
-%             ME
-%             fprintf("An error occured. Check the Command Window for error codes and try again.")
-%             closereq
-%             LeafMachineBatchGUI
-%         end
+        catch ME
+            ArrowCursor();
+            guidata(hObject,handles);
+            ME.getReport
+            fprintf("An error occured. Check the Command Window for error codes and try again.")
+            closereq
+            LeafMachineBatchGUI
+        end
     elseif RESET == "Reset"
         closereq
         LeafMachineBatchGUI
@@ -422,6 +423,7 @@ function customSet_Callback(hObject, eventdata, handles)
         % Update GUI
         set(handles.customSet,'BackgroundColor',[.47 .67 .19]);
     catch
+        fprintf("An error occurred when reading the 'occurrences.csv' file. \n");
     end
     guidata(hObject,handles);
 end
@@ -437,6 +439,7 @@ function customSetImages_Callback(hObject, eventdata, handles)
         % Update GUI
         set(handles.customSetImages,'BackgroundColor',[.47 .67 .19]);
     catch
+        fprintf("An error occurred when reading the 'images.csv' file. \n");
     end
     guidata(hObject,handles);
 end
@@ -452,6 +455,7 @@ function customOut_Callback(hObject, eventdata, handles)
         % Update GUI
         set(handles.customOut,'BackgroundColor',[.47 .67 .19]);
     catch 
+        fprintf("An error occurred setting the output directory. \n");
     end
     guidata(hObject, handles);
 end
@@ -459,12 +463,14 @@ end
 % --- Executes on button press in customRun.
 function customRun_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
-    
+    try
     generateCustomImagesFile(handles.tableCustomSetImages,handles.tableCustomSet,handles.dirCustomOut)
     
     closereq
     LeafMachineBatchGUI
-    
+    catch
+        fprintf("An error occurred when generating the custom images file, please close this window and try again. \n");
+    end
     guidata(hObject,handles);
 end
 
@@ -473,13 +479,14 @@ function FGset_Callback(hObject, eventdata, handles)
     handles = guidata(hObject); 
     try
     % Choose file
-    [handles.dirFGFileName,handles.dirFGPath] = uigetfile({'*.csv','*.xlsx','*.xls'},'Choose .csv File Containing URLs in a Column');
+    [handles.dirFGFileName,handles.dirFGPath] = uigetfile({'*.csv'},'Choose .csv File Containing URLs in a Column');
     addpath(handles.dirFGPath);
     handles.dirFGFile = readtable(fullfile(handles.dirFGPath,handles.dirFGFileName));
     
     % Update GUI
     set(handles.FGset,'BackgroundColor',[.47 .67 .19]);
     catch
+        fprintf("An error occurred when reading the filter csv/xlsx file. \n");
     end
     
     guidata(hObject, handles);
@@ -494,24 +501,80 @@ end
 % --- Executes on button press in Dimages.
 function Dimages_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
+    
+    try
+    % Choose file
+    [handles.dirDimages,handles.dirDimagesPath] = uigetfile({'*.csv','*.xlsx'},'Choose images.csv File');
+    addpath(handles.dirDimagesPath);
+    handles.DimagesFILE = fullfile(handles.dirDimagesPath,handles.dirDimages);
+    
+    % Update GUI
+    set(handles.Dimages,'BackgroundColor',[.47 .67 .19]);
+    catch
+        fprintf("An error occurred when selecting the 'images.csv' file. \n");
+    end
+    
     guidata(hObject,handles);
 end
 
 % --- Executes on button press in Docc.
 function Docc_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
+    
+    try
+    % Choose file
+    [handles.dirDocc,handles.dirDoccPath] = uigetfile({'*.csv','*.xlsx'},'Choose occurrences.csv File');
+    addpath(handles.dirDoccPath);
+    handles.DoccFILE = fullfile(handles.dirDoccPath,handles.dirDocc);
+    
+    % Update GUI
+    set(handles.Docc,'BackgroundColor',[.47 .67 .19]);
+    catch
+        fprintf("An error occurred when selecting the 'occurrences.csv' file. \n");
+    end
+    
     guidata(hObject,handles);
 end
 
 % --- Executes on button press in Dout.
 function Dout_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
+    
+    try
+        % Choose folder location
+        [handles.dirDOut] = uigetdir('Choose Save Location');
+        addpath(handles.dirDOut)
+
+        % Update GUI
+        set(handles.Dout,'BackgroundColor',[.47 .67 .19]);
+    catch 
+        fprintf("An error occurred setting the output directory. \n");
+    end
+    
     guidata(hObject,handles);
 end
 
 % --- Executes on button press in Drun.
 function Drun_Callback(hObject, eventdata, handles)
     handles = guidata(hObject);
+    
+    %%% Resolution Group Module
+    set(handles.resPick,'SelectionChangeFcn',@resPick_SelectionChangedFcn)
+    % Check radiobuttons for resPick
+    handles.res = "BOTH";
+    if handles.resFull.Value
+        handles.res = "HIGH";
+    elseif handles.resLow.Value
+        handles.res = "LOW";
+    elseif handles.resBoth.Value
+        handles.res = "BOTH";
+    end
+    
+    try
+        GUIdownloadDwCimages(handles.DimagesFILE,handles.DoccFILE,handles.dirDOut,handles.res)
+    catch
+        fprintf("An error occurred with the GUIdownloadDwCimages function. \n");
+    end
     guidata(hObject,handles);
 end
 
@@ -625,6 +688,21 @@ function filterGroup_SelectionChangedFcn(hObject, eventdata, handles)
     guidata(hObject,handles);
 end
 
+% --- Executes when selected object is changed in filterGroup.
+function resPick_SelectionChangedFcn(hObject, eventdata, handles)
+    handles = guidata(hObject);
+    
+    set(handles.resPick,'SelectionChangeFcn',@resPick_SelectionChangedFcn)
+    switch(get(eventdata.NewValue,'Tag'))
+        case 'resFull'
+            handles.res = "HIGH";
+        case 'resLow'
+            handles.res = "LOW";
+        case 'resBoth'
+            handles.res = "BOTH";
+    end
+    guidata(hObject,handles);
+end
 
 % --- Executes on button press in quality.
 function quality_Callback(hObject, eventdata, handles)
