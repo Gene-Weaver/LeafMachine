@@ -2,8 +2,8 @@
 /SORT/*
 /Dev/*
 /Networks/Alternative_Networks/*
-*.asv
-*.m~
+**.asv
+**.m~
 LeafMachine_SegNet.mat
 LeafMachine_API.m
 /SandboxFunctions/emailCNNTestImages.m
