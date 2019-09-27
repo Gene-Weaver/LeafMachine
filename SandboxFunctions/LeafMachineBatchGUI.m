@@ -242,7 +242,7 @@ function Run_Callback(hObject,~,~)
                 if handles.FGfamily.Value
                     handles.FGfilter = "family";
                 elseif handles.FGgenera.Value
-                    handles.FGfilter = "genera";
+                    handles.FGfilter = "genus";
                 elseif handles.FGspecies.Value
                     handles.FGfilter = "species";
                 else
@@ -399,7 +399,7 @@ function Run_Callback(hObject,~,~)
             ArrowCursor();
             guidata(hObject,handles);
             ME.getReport
-            fprintf("An error occured. Check the Command Window for error codes and try again.")
+            fprintf("An error occured. Check the Command Window for error codes and try again. \n")
             closereq
             LeafMachineBatchGUI
         end

@@ -16,9 +16,9 @@ function buildImageOverlayDilate(img,mp,n,measurements,colors,destinationDirecto
         end
         % Grow border through dilation and locate new coordinates 
         if (0 <= mp) && (mp < 2.5)
-            [row,col] = ind2sub(size(img),find(imdilate(blankMask,strel('disk',1,0))));
-        elseif (2.5 <= mp) && (mp < 10)
             [row,col] = ind2sub(size(img),find(imdilate(blankMask,strel('disk',3,0))));
+        elseif (2.5 <= mp) && (mp < 10)
+            [row,col] = ind2sub(size(img),find(imdilate(blankMask,strel('disk',5,0))));
         elseif (10 <= mp) && (mp < 20)
             [row,col] = ind2sub(size(img),find(imdilate(blankMask,strel('disk',9,0))));
         elseif (20 <= mp) && (mp < 30)
