@@ -3,4 +3,9 @@
 /Dev/*
 /Networks/Alternative_Networks/*
 *.asv
+*.m~
 LeafMachine_SegNet.mat
+LeafMachine_API.m
+/SandboxFunctions/emailCNNTestImages.m
+/SandboxFunctions/sendEmailOnFailure.m
+/SandboxFunctions/POC_Images/*
