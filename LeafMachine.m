@@ -7,12 +7,12 @@
 %%%
 %%%     University of Colorado, Boulder
 %%%     Department of Ecology and Evolutionary Biology
-
-addpath(genpath('Img'));
-addpath(genpath('Networks'));
-addpath(genpath('SandboxFunctions'));
-LeafMachineInitGUI
-
+function LeafMachine()
+    addpath(genpath('Img'));
+    addpath(genpath('Networks'));
+    addpath(genpath('SandboxFunctions'));
+    LeafMachineInitGUI
+end
 
 %%% For Manual version of LeafMachine...
 % addpath(genpath('Img'));

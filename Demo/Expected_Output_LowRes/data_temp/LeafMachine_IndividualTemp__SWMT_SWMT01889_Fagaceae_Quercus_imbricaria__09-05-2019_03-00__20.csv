@@ -1,0 +1,4 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+SWMT_SWMT01889_Fagaceae_Quercus_imbricaria,SVM,Leaf_Clump,09-05-2019 03-00-00.940,2.34375,1,[0.85 0.325 0.098],[104.5 264.5 1048 993],448774.75,6638.029
+SWMT_SWMT01889_Fagaceae_Quercus_imbricaria,SVM,Leaf,09-05-2019 03-00-01.459,2.34375,4,[0.466 0.674 0.188],[225.5 976.5 477 273],46363.25,1224.606
+SWMT_SWMT01889_Fagaceae_Quercus_imbricaria,SVM,Leaf_Partial,09-05-2019 03-00-02.475,2.34375,10,[0 0.447 0.741],[556.5 189.5 80 103],4782.75,396.326

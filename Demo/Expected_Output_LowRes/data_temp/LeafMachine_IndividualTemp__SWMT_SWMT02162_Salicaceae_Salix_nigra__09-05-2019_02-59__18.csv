@@ -1,0 +1,4 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+SWMT_SWMT02162_Salicaceae_Salix_nigra,SVM,Leaf,09-05-2019 02-59-48.883,2.34375,2,[0.466 0.674 0.188],[282.5 377.5 167 567],30743,1236.205
+SWMT_SWMT02162_Salicaceae_Salix_nigra,SVM,Leaf,09-05-2019 02-59-49.188,2.34375,4,[0.466 0.674 0.188],[501.5 381.5 173 518],23888.625,1233.381
+SWMT_SWMT02162_Salicaceae_Salix_nigra,SVM,Leaf,09-05-2019 02-59-49.347,2.34375,5,[0.466 0.674 0.188],[772.5 396.5 87 625],28927.375,1306.521

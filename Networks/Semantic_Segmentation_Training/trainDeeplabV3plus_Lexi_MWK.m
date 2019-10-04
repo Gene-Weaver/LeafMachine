@@ -148,9 +148,21 @@ for NNN = 1:length(pxdsTest.Files)
     imshowpair(I,C,'montage')
     pause(.5)
 end
-%%
 
-% pxdsTruth = pixelLabelDatastore(validationSet.PixelLabelData,validationSet.ClassNames,pixelLabelID); 
+%% Subset images by resolution, based on imageOrder file
+res_HighOrLow = readtable("/home/brlab/Dropbox/ML_Project/Image_Database/LeafMachine_Validation_Images/LM_Testing_Validation75set/imageOrder_Res.xlsx");
+
+labels_FR = "/home/brlab/Dropbox/ML_Project/Image_Database/LeafMachine_Validation_Images/LM_Testing_Validation75set/pixelLabelData_FullRes";
+labels_LR = "/home/brlab/Dropbox/ML_Project/Image_Database/LeafMachine_Validation_Images/LM_Testing_Validation75set/pixelLabelData_LowRes";
+
+% Subset 
+sub_High_Px = pixelLabelDatastore(labels_FR,gTruth_Validation.LabelDefinitions.Name,pixelLabelID);
+sub_Low_Px = pixelLabelDatastore(labels_LR,gTruth_Validation.LabelDefinitions.Name,pixelLabelID);
+
+sub_High_Img = subset(imgDS,find(res_HighOrLow.FullRes)); 
+sub_Low_Img = subset(imgDS,find(res_HighOrLow.FullRes==0)); 
+
+%% Overall accuracy 
 try
     pxdsResults = semanticseg(imgDS, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',24,'ExecutionEnvironment','gpu');
 catch
@@ -181,3 +193,69 @@ evaluationMetrics = ["accuracy" "iou"];
 metrics = evaluateSemanticSegmentation(pxdsResults, pxdsTest, "Metrics", evaluationMetrics);
 % Display metrics for each class.
 metrics.ClassMetrics
+
+%% Accuracy by resolution FULL RES
+try
+    pxdsResultsFR = semanticseg(sub_High_Img, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',24,'ExecutionEnvironment','gpu');
+catch
+    try
+        pxdsResultsFR = semanticseg(sub_High_Img, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',12,'ExecutionEnvironment','gpu');
+
+    catch
+        pxdsResultsFR = semanticseg(sub_High_Img, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',6,'ExecutionEnvironment','gpu');
+    end
+end
+
+metrics = evaluateSemanticSegmentation(pxdsResultsFR, sub_High_Px);
+
+metrics.ConfusionMatrix
+metrics.NormalizedConfusionMatrix
+metrics.DataSetMetrics
+metrics.ClassMetrics
+metrics.ImageMetrics
+
+normConfMatData = metrics.NormalizedConfusionMatrix.Variables;
+figure
+h = heatmap(classNames, classNames, 100 * normConfMatData);
+h.XLabel = 'Predicted Class';
+h.YLabel = 'True Class';
+h.Title  = 'Normalized Confusion Matrix (%)';
+
+evaluationMetrics = ["accuracy" "iou"];
+metrics = evaluateSemanticSegmentation(pxdsResultsFR, sub_High_Px, "Metrics", evaluationMetrics);
+% Display metrics for each class.
+metrics.ClassMetrics
+
+%% Accuracy by resolution  LOW RES
+try
+    pxdsResultsLR = semanticseg(sub_Low_Img, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',24,'ExecutionEnvironment','gpu');
+catch
+    try
+        pxdsResultsLR = semanticseg(sub_Low_Img, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',12,'ExecutionEnvironment','gpu');
+
+    catch
+        pxdsResultsLR = semanticseg(sub_Low_Img, deeplabV3Plus_Lexi_dynamicCrop_MWK, "WriteLocation", tempdir, 'MiniBatchSize',6,'ExecutionEnvironment','gpu');
+    end
+end
+
+metrics = evaluateSemanticSegmentation(pxdsResultsLR, sub_Low_Px);
+
+metrics.ConfusionMatrix
+metrics.NormalizedConfusionMatrix
+metrics.DataSetMetrics
+metrics.ClassMetrics
+metrics.ImageMetrics
+
+normConfMatData = metrics.NormalizedConfusionMatrix.Variables;
+figure
+h = heatmap(classNames, classNames, 100 * normConfMatData);
+h.XLabel = 'Predicted Class';
+h.YLabel = 'True Class';
+h.Title  = 'Normalized Confusion Matrix (%)';
+
+evaluationMetrics = ["accuracy" "iou"];
+metrics = evaluateSemanticSegmentation(pxdsResultsLR, sub_Low_Px, "Metrics", evaluationMetrics);
+% Display metrics for each class.
+metrics.ClassMetrics
+
+
