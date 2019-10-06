@@ -118,6 +118,7 @@ end
 
 function changeURL_Callback(hObject,~,~)
     handles = guidata(hObject); 
+    try
     % Choose file
     [handles.dirURLFileName,handles.dirURLPath] = uigetfile({'*.csv'},'Choose .csv File Containing URLs in a Column');
     addpath(handles.dirURLPath);
@@ -129,12 +130,14 @@ function changeURL_Callback(hObject,~,~)
     set(handles.changeURL,'BackgroundColor',[.47 .67 .19]);
     set(handles.fileSaveDisp,'String',"");
     set(handles.uibuttongroup5,'selectedobject',handles.radiobuttonURL);
-    
+    catch
+    end
     guidata(hObject, handles);
 end
 
 function changeURL2_Callback(hObject,~,~)
     handles = guidata(hObject);
+    try
     [handles.dirURLFileName2,handles.dirURLPath2] = uigetfile({'*.csv'},'Choose .csv File Containing URLs in a Column');
     addpath(handles.dirURLPath2);
     handles.dirURLFile2 = fullfile(handles.dirURLPath2,handles.dirURLFileName2);
@@ -145,7 +148,8 @@ function changeURL2_Callback(hObject,~,~)
     set(handles.changeURL2,'BackgroundColor',[.47 .67 .19]);
     set(handles.fileSaveDisp,'String',"");
     set(handles.uibuttongroup5,'selectedobject',handles.radiobuttonURL);
-    
+    catch
+    end
     guidata(hObject, handles);
 end
 
