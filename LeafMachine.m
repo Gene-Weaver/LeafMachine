@@ -11,6 +11,7 @@ function LeafMachine()
     addpath(genpath('Img'));
     addpath(genpath('Networks'));
     addpath(genpath('SandboxFunctions'));
+    addpath(genpath('Demo'));
     LeafMachineInitGUI
 end
 
