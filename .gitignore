@@ -10,6 +10,7 @@
 /SandboxFunctions/sendEmailOnFailure.m
 LeafMachine_SegNet.mat
 LeafMachine_API.m
+/Networks/LM-CNN.ps
 
 # Windows default autosave extension
 *.asv
