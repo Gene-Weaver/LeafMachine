@@ -6,7 +6,7 @@
 %%%     Department of Ecology and Evolutionary Biology
 
 
-function montageSegmentation(net,filename,destinationDirectory,image,cpu_gpu,show,nClasses)
+function PLOT = montageSegmentation(net,filename,destinationDirectory,image,cpu_gpu,show,nClasses)
     addpath('SandboxFunctions');
     
     % Read image

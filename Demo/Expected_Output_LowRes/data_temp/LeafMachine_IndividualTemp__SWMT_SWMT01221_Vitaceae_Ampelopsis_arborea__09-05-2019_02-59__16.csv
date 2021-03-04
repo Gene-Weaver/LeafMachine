@@ -1,0 +1,6 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+SWMT_SWMT01221_Vitaceae_Ampelopsis_arborea,SVM,Leaf_Clump,09-05-2019 02-59-27.184,2.34375,1,[0.85 0.325 0.098],[114.5 309.5 287 436],55333.75,2347.295
+SWMT_SWMT01221_Vitaceae_Ampelopsis_arborea,SVM,Leaf_Partial,09-05-2019 02-59-27.346,2.34375,2,[0 0.447 0.741],[153.5 851.5 157 163],13057.375,705.309
+SWMT_SWMT01221_Vitaceae_Ampelopsis_arborea,SVM,Leaf_Partial,09-05-2019 02-59-27.664,2.34375,4,[0 0.447 0.741],[210.5 1190.5 231 348],40422.875,1546.876
+SWMT_SWMT01221_Vitaceae_Ampelopsis_arborea,SVM,Leaf_Clump,09-05-2019 02-59-27.960,2.34375,5,[0.85 0.325 0.098],[277.5 398.5 874 677],154490,5493.157
+SWMT_SWMT01221_Vitaceae_Ampelopsis_arborea,SVM,Leaf_Clump,09-05-2019 02-59-28.445,2.34375,8,[0.85 0.325 0.098],[436.5 1191.5 349 345],48449.375,2040.485

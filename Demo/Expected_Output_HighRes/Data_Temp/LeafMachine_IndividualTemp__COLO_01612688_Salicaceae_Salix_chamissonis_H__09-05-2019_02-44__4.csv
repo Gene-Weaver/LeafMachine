@@ -1,0 +1,7 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+COLO_01612688_Salicaceae_Salix_chamissonis_H,SVM,Leaf,09-05-2019 02-44-43.835,2.94,1,[0.466 0.674 0.188],[172.5 408.5 138 214],18315.5,654.441
+COLO_01612688_Salicaceae_Salix_chamissonis_H,SVM,Leaf,09-05-2019 02-44-44.055,2.94,2,[0.466 0.674 0.188],[290.5 405.5 176 156],19345.625,652.489
+COLO_01612688_Salicaceae_Salix_chamissonis_H,SVM,Leaf,09-05-2019 02-44-44.247,2.94,3,[0.466 0.674 0.188],[394.5 772.5 364 211],40282.75,1266.282
+COLO_01612688_Salicaceae_Salix_chamissonis_H,SVM,Leaf,09-05-2019 02-44-44.466,2.94,4,[0.466 0.674 0.188],[697.5 630.5 133 146],12929.125,451.627
+COLO_01612688_Salicaceae_Salix_chamissonis_H,SVM,Leaf,09-05-2019 02-44-44.622,2.94,5,[0.466 0.674 0.188],[724.5 435.5 123 131],11881.375,413.386
+COLO_01612688_Salicaceae_Salix_chamissonis_H,SVM,Leaf,09-05-2019 02-44-45.248,2.94,8,[0.466 0.674 0.188],[990.5 370.5 237 199],26393.25,1017.469

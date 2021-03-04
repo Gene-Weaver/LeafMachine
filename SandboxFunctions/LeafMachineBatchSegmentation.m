@@ -28,16 +28,19 @@ function [fLen,T] = LeafMachineBatchSegmentation(Directory,Segment_Montage_Both,
     tic()
     for file = imgFilesPOC'
         img = char(file.name)
+        set(handles.progress,'String',strcat("Working on: ",img),'ForegroundColor',[0 .45 .74]);
+        [DimN,DimM,~] = size(imread(img))
+        Dim = min(DimN,DimM)
         switch Segment_Montage_Both
             case 'Segment'
-                try
+                if Dim < 2016
                     "Segment LR"
                     filename1 = strsplit(string(img),".");
                     filename1 = char(filename1{1});
                     filenameSuffix2 = strcat('Segment',filenameSuffix);
                     filename = char(strcat(filename1,'_',char(filenameSuffix2),'.jpg'));
                     imgOut = basicSegmentation(net,filename,destinationDirectory,img,gpu_cpu);
-                catch
+                else
                     "Segment HR"
                     filename2 = strsplit(string(img),".");
                     filename2 = char(filename2{1});
@@ -54,7 +57,7 @@ function [fLen,T] = LeafMachineBatchSegmentation(Directory,Segment_Montage_Both,
                     filename = char(strcat(filename3,'_',char(filenameSuffix4),'.jpg'));
                     imgOut = montageSegmentation(net,filename,destinationDirectory,img,gpu_cpu,nClasses);
                 catch
-%                     "Montage HR"
+                    "Montage HR not available at this time"
 %                     filename8 = strsplit(string(imgIn),".");
 %                     filename8 = char(filename8{1});
 %                     filenameSuffix5 = strcat('MontageHR',filenameSuffix);
@@ -62,7 +65,7 @@ function [fLen,T] = LeafMachineBatchSegmentation(Directory,Segment_Montage_Both,
 %                     highResMontageSegmentation(net,filename,destinationDirectory,imgIn,gpu_cpu,show)
                 end
             otherwise % Both
-                try
+                if Dim < 2016
                     % Segment 
                     "Segment LR"
                     filename4 = strsplit(string(img),".");
@@ -70,14 +73,22 @@ function [fLen,T] = LeafMachineBatchSegmentation(Directory,Segment_Montage_Both,
                     filenameSuffix6 = strcat('Segment',filenameSuffix);
                     filename = char(strcat(filename4,'_',char(filenameSuffix6),'.jpg'));
                     imgOut = basicSegmentation(net,filename,destinationDirectory,img,gpu_cpu);
+                    if show == "show"
+                        axes(handles.axes1)
+                        imshow(imgOut)
+                    end
                     % Montage
                     "Montage LR"
                     filename5 = strsplit(string(img),".");
                     filename5 = char(filename5{1});
                     filenameSuffix7 = strcat('Montage',filenameSuffix);
                     filename = char(strcat(filename5,'_',char(filenameSuffix7),'.jpg'));
-                    imgOut = montageSegmentation(net,filename,destinationDirectory,img,gpu_cpu,nClasses);
-                catch
+                    imgOut = montageSegmentation(net,filename,destinationDirectory,img,gpu_cpu,show,nClasses);
+                    if show == "show"
+                        axes(handles.axes1)
+                        imshow(imgOut)
+                    end
+                else
                     % Segment HR
                     "Segment HR"
                     filename6 = strsplit(string(img),".");

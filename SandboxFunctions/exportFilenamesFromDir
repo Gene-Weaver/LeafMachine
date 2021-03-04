@@ -1,0 +1,18 @@
+
+
+Directory = "/home/brlab/Dropbox/ML_Project/Image_Database/LeafMachine_Validation_Images/Manuscript_Vouchers/Overlay_FR";
+imgFiles = dir(char(Directory));
+imgFiles = imgFiles(~ismember({imgFiles.name},{'.','..'}));
+fLen = length(imgFiles);
+
+filenames = struct2table(imgFiles);
+
+for i=1:fLen
+    file = filenames.name{i}
+end
+
+
+
+
+filenames = struct2table(imgFiles);
+writetable(filenames,"/home/brlab/Dropbox/ML_Project/Image_Database/LeafMachine_Validation_Images/Manuscript_Vouchers/manuscript_Images_Filenames.xlsx")

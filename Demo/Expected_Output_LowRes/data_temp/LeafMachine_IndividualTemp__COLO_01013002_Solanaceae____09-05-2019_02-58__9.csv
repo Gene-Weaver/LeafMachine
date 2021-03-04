@@ -1,0 +1,2 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+COLO_01013002_Solanaceae__,SVM,Leaf_Partial,09-05-2019 02-58-03.128,2.94,3,[0 0.447 0.741],[74.5 195.5 1258 1441],970403.625,6135.519

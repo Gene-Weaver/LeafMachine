@@ -1,0 +1,11 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-09.558,2.94,1,[0 0.447 0.741],[8.5 1286.5 32 296],4831.625,931.385
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-10.438,2.94,7,[0 0.447 0.741],[91.5 520.5 152 87],6283.75,534.967
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Clump,09-05-2019 02-56-10.617,2.94,8,[0.85 0.325 0.098],[113.5 865.5 277 282],30322.375,2290.539
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-10.918,2.94,10,[0 0.447 0.741],[155.5 298.5 114 163],3028,633.888
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-11.891,2.94,16,[0 0.447 0.741],[216.5 1166.5 331 147],24598.875,1342.116
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Clump,09-05-2019 02-56-12.321,2.94,18,[0.85 0.325 0.098],[256.5 258.5 391 412],55422.375,2398.756
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-15.770,2.94,41,[0 0.447 0.741],[531.5 1023.5 94 78],3411.25,314.972
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-16.064,2.94,43,[0 0.447 0.741],[537.5 794.5 94 141],6673.625,530.849
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Clump,09-05-2019 02-56-16.936,2.94,48,[0.85 0.325 0.098],[602.5 482.5 555 672],134172.75,5629.671
+COLO_02089597_Fagaceae_Quercus_hypoleucoides,SVM,Leaf_Partial,09-05-2019 02-56-21.031,2.94,76,[0 0.447 0.741],[996.5 1109.5 258 400],39880,1657.256

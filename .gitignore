@@ -1,0 +1,14 @@
+/DELETE_LATER/*
+/Leaf_Data/*
+/Processed_Images/*
+/Ruler/*
+/SORT/*
+/Dev/*
+/Networks/Alternative_Networks/*
+/SandboxFunctions/POC_Images/*
+/SandboxFunctions/emailCNNTestImages.m
+/SandboxFunctions/sendEmailOnFailure.m
+LeafMachine_SegNet.mat
+LeafMachine_API.m
+**.asv
+**.m~

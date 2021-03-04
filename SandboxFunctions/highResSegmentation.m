@@ -75,4 +75,5 @@ function segImage = highResSegmentation(net,filename,destinationDirectory,imgIn,
 
     % Other Options
     destDir = fullfile(destinationDirectory,filename);
+    imwrite(segImage,destDir);
 end

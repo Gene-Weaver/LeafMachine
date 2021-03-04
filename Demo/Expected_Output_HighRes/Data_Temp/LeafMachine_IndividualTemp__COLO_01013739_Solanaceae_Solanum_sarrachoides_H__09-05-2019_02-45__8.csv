@@ -1,0 +1,8 @@
+filename,predictionType,SVMprediction,time,megapixels,id,color,bbox,area,perimeter
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf_Partial,09-05-2019 02-45-45.280,2.94,3,[0 0.447 0.741],[52.5 484.5 422 592],105582.625,2332.678
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf,09-05-2019 02-45-45.473,2.94,4,[0.466 0.674 0.188],[275.5 1137.5 222 415],51420.5,1052.644
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf_Clump,09-05-2019 02-45-45.865,2.94,6,[0.85 0.325 0.098],[464.5 144.5 597 299],89051.375,2512.963
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf_Partial,09-05-2019 02-45-46.208,2.94,8,[0 0.447 0.741],[520.5 1282.5 55 353],5583.125,810.918
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf_Partial,09-05-2019 02-45-46.960,2.94,12,[0 0.447 0.741],[647.5 1174.5 721 428],170965.75,2669.212
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf_Partial,09-05-2019 02-45-47.132,2.94,13,[0 0.447 0.741],[652.5 583.5 24 148],1346.375,326.95
+COLO_01013739_Solanaceae_Solanum_sarrachoides_H,SVM,Leaf,09-05-2019 02-45-47.640,2.94,16,[0.466 0.674 0.188],[708.5 424.5 399 465],102307.625,1697.767
