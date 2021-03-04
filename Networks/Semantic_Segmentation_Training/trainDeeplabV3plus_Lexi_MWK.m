@@ -11,7 +11,7 @@ addpath('/home/brlab/Dropbox/ML_Project/LeafMachine/SandboxFunctions')
 load('/home/brlab/Documents/MATLAB/Test/LMv2_CNN_wkspace.mat');
 
 % load('/home/brlab/Documents/MATLAB/Test/Images/gTruth_Training_dynamicCrop__Lexi_WK.mat');
-% load('/home/brlab/Documents/MATLAB/Test/Images/gTruth_Validation_dynamicCrop__Lexi_WK.mat');
+% gTruth_V = load('/home/brlab/Documents/MATLAB/Test/Images/gTruth_Validation_dynamicCrop__Lexi_WK.mat');
 
 largeSize = [360 360 3];
 lgraph = helperDeeplabv3PlusResnet18(largeSize, 5);
@@ -105,10 +105,25 @@ deeplab_v2_Lexi_dynamicCrop_MWK_August80percent = trainNetwork(plimds_Training_d
 save deeplab_v2_Lexi_dynamicCrop_MWK_August80percent
 
 %% Test
-image = imread("/home/brlab/Downloads/NCZP_3843305_LAMIACEAE_Collinsonia_canadensis_H.jpg");
-[C,~,~] = semanticseg(image,deeplab_v2_Lexi_dynamicCrop_MWK_August80percent,'ExecutionEnvironment','gpu');
+net_SEQ1 = load('/home/brlab/Downloads/network_SEQnet1.mat');
+net_SEQ4 = load('/home/brlab/Downloads/network_SEQnet4.mat');
+net_SEQ5 = load('/home/brlab/Downloads/network_SEQnet5.mat');
+net_SEQ1 = net_SEQ1.net1;
+net_SEQ4 = net_SEQ4.net4;
+net_SEQ5 = net_SEQ5.net5;
+net = net_SEQ5;
+
+image1 = imread("/home/brlab/Downloads/NCZP_3843305_LAMIACEAE_Collinsonia_canadensis_H.jpg");
+image2 = imread("/home/brlab/Downloads/NCZP_3842639_ASTERACEAE_Heterotheca_subaxillaris.jpg");
+image3 = imread("/home/brlab/Downloads/NCZP_3842639_ASTERACEAE_Heterotheca_subaxillaris_H.jpg");
+image4 = imread("/home/brlab/Downloads/SEL_6824703_Cyperaceae_Rhynchospora_globularis.jpg");
+image5 = imread("/home/brlab/Downloads/SEL_6824703_Cyperaceae_Rhynchospora_globularis_H.jpg");
+
+ishow = image3;
+[C,~,~] = semanticseg(ishow,net,'ExecutionEnvironment','gpu');
 CC = size(C);
-B = labeloverlay(imcrop(image,[0 0 CC(2) CC(1)]),C);
+B = labeloverlay(imcrop(ishow,[0 0 CC(2) CC(1)]),C);
+figure(1);
 imshow(B)
 
 sendEmailOnFailure('deeplab_v2_Lexi_dynamicCrop_MWK_August75percent','deeplab_v2_Lexi_dynamicCrop_MWK_August75percent',B);

@@ -15,6 +15,8 @@ function buildImageOverlayDilate(img,mp,n,measurements,colors,destinationDirecto
             blankMask(round(measurements{P}.cleanLeaf_PerimeterOverlay{1}(i,2)),round(measurements{P}.cleanLeaf_PerimeterOverlay{1}(i,1))) = 255;
         end
         % Grow border through dilation and locate new coordinates 
+        % Probably can be simplified by just dividing mp by 2 for larger
+        % images 
         if (0 <= mp) && (mp < 2.5)
             [row,col] = ind2sub(size(img),find(imdilate(blankMask,strel('disk',3,0))));
         elseif (2.5 <= mp) && (mp < 10)

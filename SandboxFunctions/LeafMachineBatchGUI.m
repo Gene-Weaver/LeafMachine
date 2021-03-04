@@ -67,7 +67,7 @@ function LeafMachineBatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.netSVMruler = load('Networks/SVM/SVM_RulerID_BaggedTrees0906percent.mat');
     handles.netSVMruler = handles.netSVMruler.SVM_RulerID_BaggedTrees0906percent;
     
-    % Semantic Segmentation 
+    % Semantic Segmentation  
     handles.S = load('Networks/deeplabV3Plus_Lexi_dynamicCrop_MWK_network.mat');  
     handles.LeafMachine_SegNet_v1 = handles.S.deeplabV3Plus_Lexi_dynamicCrop_MWK;
 
