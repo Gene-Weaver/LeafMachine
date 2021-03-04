@@ -6,12 +6,21 @@
 %%%     Department of Ecology and Evolutionary Biology
 
 
+%         leaf = 1 --> green
+%         stem = 2 --> blue
+% fruit/flower = 3 --> magenta
+%           bg = 4 --> white
+%         text = 5 --> red
+
+
 function [B,C,score,allScores] = basicSegmentation(net,filename,destinationDirectory,image,cpu_gpu,quality)
 
     % Segmentation
     [C,score,allScores] = semanticseg(image,net,'ExecutionEnvironment',cpu_gpu);
 
-    B = labeloverlay(image,C);
+    map = [0 1 0; 0 0 1; 1 0 1; 1 1 1; 1 0 0];
+        
+    B = labeloverlay(image,C,'Colormap',map);
     
     if quality == "High"
         filename2 = char(strcat(filename,'.png'));

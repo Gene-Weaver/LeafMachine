@@ -112,16 +112,25 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
             if family ~= "NaN"
                 try
                     returnFamily = familyStrings{famPos};
+                    if isempty(returnFamily)
+                        returnFamily = "NA";
+                    end
                 catch
                     returnFamily = "NA";
                 end
                 try 
                     returnGenus = familyStrings{famPos+1};
+                    if isempty(returnGenus)
+                        returnGenus = "NA";
+                    end
                 catch
                     returnGenus = "NA";
                 end
                 try 
                     returnSpecies = familyStrings{famPos+2};
+                    if isempty(returnSpecies)
+                        returnSpecies = "NA";
+                    end
                 catch
                     returnSpecies = "NA";
                 end
@@ -302,6 +311,11 @@ function [fLen,timeRun] = LeafMachineBatchSegmentation_GUI(Directory,Directory2,
                     if saveOverlayImages == "True"
                         formatSpecB = "     Time --- Export data and overlay: %.3f seconds \n";
                         if ~isempty(overlayTable.measurements)
+                            % Temp for sending to Stephen 
+                            save('variablesFor_buildImageOverlayDilate.mat',...
+                                'megapixels','overlayTable','destinationDirectory','filenameOverlay','quality');
+                            load('variablesFor_buildImageOverlayDilate.mat')
+                            % img = imread('D:\D_Desktop\Socorros\Q_cf_conzattii_Acevedo_217_CIIDIR.jpg');
                             buildImageOverlayDilate(img,megapixels,length(overlayTable.measurements),overlayTable.measurements,overlayTable.color,fullfile(destinationDirectory,'Overlay'),filenameOverlay,quality);
                         else
                             fprintf("     * Notice * No leaf candidates were located \n")
