@@ -1,3 +1,6 @@
+## NOTE:
+LeafMachine2 is now available and has improved upon the original LeafMachine concept in every way. Please see [leafmachine.org](https://leafmachine.org) or [github.com/Gene-Weaver/LeafMachine2](https://github.com/Gene-Weaver/LeafMachine2) for updates. We recommend using LeafMachine2 going forward and will no longer support the original Matlab version of LeafMachine.
+
 # LeafMachine
 LeafMachine is a GUI that autonomously extracts leaf trait data from herbarium vouchers using CNNs, SVMs, and CV algorithms. There are two GUIs: manual version for fine-scale analyses, batch version for local files or from a list of URLs. 
 
